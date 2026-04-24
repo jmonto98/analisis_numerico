@@ -143,3 +143,24 @@ def biseccion(funcion: str, xi: float, xs: float, tol: float, niter: int, error_
         success=False,
     )
     return result
+
+
+def graph_points(funcion: str, xi: float, xs: float, n_points: int = 180) -> list[dict]:
+    if xi == xs:
+        raise ValueError("xi y xs deben ser diferentes para generar la gráfica.")
+    if n_points <= 1:
+        raise ValueError("El número de puntos debe ser mayor que 1.")
+
+    f = parse_function(funcion)
+    step = (xs - xi) / (n_points - 1)
+
+    points: list[dict] = []
+    for i in range(n_points):
+        x = xi + step * i
+        try:
+            y = _validate_real_value(f(x))
+        except Exception:
+            y = None
+        points.append({"x": x, "y": y})
+
+    return points

@@ -1,20 +1,12 @@
 import { useState } from "react";
-
-type Iteration = {
-  i: number;
-  xm: number;
-  f_xm: number;
-  error: number | null;
-};
-
-type BiseccionResponse = {
-  iterations: Iteration[];
-  root: number | null;
-  message: string;
-  success: boolean;
-};
+import BiseccionForm from "./components/BiseccionForm";
+import IterationsTable from "./components/IterationsTable";
+import FunctionGraph from "./components/FunctionGraph";
+import { BiseccionResponse, GraphPoint, Iteration, Method } from "./types";
+import "./App.css";
 
 const API_URL = "http://127.0.0.1:8000/api/biseccion";
+const GRAPH_URL = "http://127.0.0.1:8000/api/grafica";
 
 function App() {
   const [funcion, setFuncion] = useState("x^3 - x - 2");
@@ -23,10 +15,77 @@ function App() {
   const [tol, setTol] = useState("1e-6");
   const [niter, setNiter] = useState("50");
   const [errorType, setErrorType] = useState<"absolute" | "relative">("relative");
+  const [method, setMethod] = useState<Method>("biseccion");
+  const [generateGraph, setGenerateGraph] = useState(true);
   const [iterations, setIterations] = useState<Iteration[]>([]);
+  const [graphPoints, setGraphPoints] = useState<GraphPoint[]>([]);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const handleFieldChange = (field: string, value: string) => {
+    switch (field) {
+      case "funcion":
+        setFuncion(value);
+        break;
+      case "xi":
+        setXi(value);
+        break;
+      case "xs":
+        setXs(value);
+        break;
+      case "tol":
+        setTol(value);
+        break;
+      case "niter":
+        setNiter(value);
+        break;
+      case "errorType":
+        setErrorType(value as "absolute" | "relative");
+        break;
+      case "method":
+        setMethod(value as Method);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleReset = () => {
+    setFuncion("");
+    setXi("");
+    setXs("");
+    setTol("");
+    setNiter("");
+    setErrorType("relative");
+    setMethod("biseccion");
+    setGenerateGraph(true);
+    setIterations([]);
+    setGraphPoints([]);
+    setMessage("");
+    setError("");
+  };
+
+  const fetchGraph = async () => {
+    const response = await fetch(GRAPH_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        funcion,
+        xi: parseFloat(xi),
+        xs: parseFloat(xs),
+        n_points: 180,
+      }),
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.detail || "Error al generar la gráfica.");
+    }
+
+    const data = (await response.json()) as { points: GraphPoint[]; success: boolean; message: string };
+    setGraphPoints(data.points);
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -34,12 +93,14 @@ function App() {
     setError("");
     setMessage("");
     setIterations([]);
+    setGraphPoints([]);
 
     try {
       const response = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          method,
           funcion,
           xi: parseFloat(xi),
           xs: parseFloat(xs),
@@ -60,6 +121,10 @@ function App() {
       if (!data.success) {
         setError("El método no logró converger con los parámetros dados.");
       }
+
+      if (generateGraph) {
+        await fetchGraph();
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
@@ -70,80 +135,33 @@ function App() {
   return (
     <div className="app-container">
       <header>
-        <h1>Método de Bisección</h1>
-        <p>Ingresa la función y los parámetros para obtener la tabla de iteraciones.</p>
+        <h1>Métodos Númericos</h1>
+        <p>Ingresa la función y los parámetros para obtener la tabla de iteraciones y la gráfica.</p>
       </header>
 
-      <form onSubmit={handleSubmit} className="form-card">
-        <label>
-          Función f(x)
-          <input value={funcion} onChange={(event) => setFuncion(event.target.value)} placeholder="x^3 - x - 2" />
-        </label>
-
-        <div className="row">
-          <label>
-            xi
-            <input value={xi} onChange={(event) => setXi(event.target.value)} placeholder="1" />
-          </label>
-          <label>
-            xs
-            <input value={xs} onChange={(event) => setXs(event.target.value)} placeholder="2" />
-          </label>
-        </div>
-
-        <div className="row">
-          <label>
-            Tolerancia
-            <input value={tol} onChange={(event) => setTol(event.target.value)} placeholder="1e-6" />
-          </label>
-          <label>
-            Iteraciones
-            <input value={niter} onChange={(event) => setNiter(event.target.value)} placeholder="50" />
-          </label>
-        </div>
-
-        <div className="row">
-          <label>
-            Tipo de error
-            <select value={errorType} onChange={(event) => setErrorType(event.target.value as "absolute" | "relative")}>
-              <option value="relative">Relativo</option>
-              <option value="absolute">Absoluto</option>
-            </select>
-          </label>
-        </div>
-
-        <button type="submit" disabled={loading}>
-          {loading ? "Calculando..." : "Calcular"}
-        </button>
-      </form>
+      <BiseccionForm
+        funcion={funcion}
+        xi={xi}
+        xs={xs}
+        tol={tol}
+        niter={niter}
+        errorType={errorType}
+        method={method}
+        generateGraph={generateGraph}
+        onChange={handleFieldChange}
+        onToggleGenerateGraph={() => setGenerateGraph((current) => !current)}
+        onSubmit={handleSubmit}
+        onReset={handleReset}
+        loading={loading}
+      />
 
       {message && <div className="result-card">{message}</div>}
       {error && <div className="error-card">{error}</div>}
 
-      {iterations.length > 0 && (
-        <div className="table-card">
-          <table>
-            <thead>
-              <tr>
-                <th>Iteración</th>
-                <th>xm</th>
-                <th>f(xm)</th>
-                <th>Error</th>
-              </tr>
-            </thead>
-            <tbody>
-              {iterations.map((row) => (
-                <tr key={row.i}>
-                  <td>{row.i}</td>
-                  <td>{row.xm.toPrecision(12)}</td>
-                  <td>{row.f_xm.toExponential(6)}</td>
-                  <td>{row.error === null ? "—" : row.error.toExponential(6)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      <div className="result-row">
+        {iterations.length > 0 && <IterationsTable iterations={iterations} />}
+        {graphPoints.length > 0 && <FunctionGraph points={graphPoints} />}
+      </div>
     </div>
   );
 }

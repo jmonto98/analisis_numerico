@@ -85,6 +85,13 @@ button:disabled {
   border-collapse: collapse;
 }
 
+.result-row {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  align-items: start;
+}
+
 .table-card th,
 .table-card td {
   text-align: left;
@@ -106,3 +113,22 @@ button:disabled {
   color: #7f1d1d;
   background: #fee2e2;
 }
+
+.graph-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.graph-chart {
+  width: 100%;
+  height: auto;
+}
+
+.graph-clickable:hover {
+  opacity: 0.9;
+  transition: opacity 0.2s ease;
+}
+
