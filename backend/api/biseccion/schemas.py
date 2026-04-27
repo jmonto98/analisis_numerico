@@ -10,8 +10,8 @@ class BiseccionRequest(BaseModel):
     tol: float = Field(..., gt=0, description="Tolerancia positiva")
     niter: int = Field(..., gt=0, description="Número máximo de iteraciones")
     error_type: Literal["absolute", "relative"] = Field(
-        "relative",
-        description="Tipo de error a utilizar en la condición de paro: absolute o relative",
+        "absolute",
+        description="Tipo de error a utilizar en la condición de parada: absolute o relative",
     )
 
 
