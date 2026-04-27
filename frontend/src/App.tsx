@@ -5,8 +5,8 @@ import FunctionGraph from "./components/FunctionGraph";
 import { BiseccionResponse, GraphPoint, Iteration, Method } from "./types";
 import "./App.css";
 
-const API_URL = "http://127.0.0.1:8000/api/biseccion";
-const GRAPH_URL = "http://127.0.0.1:8000/api/grafica";
+const API_URL = "http://localhost:8000/biseccion";
+const GRAPH_URL = "http://localhost:8000/biseccion/grafica";
 
 function App() {
   const [funcion, setFuncion] = useState("x^3 - x - 2");
