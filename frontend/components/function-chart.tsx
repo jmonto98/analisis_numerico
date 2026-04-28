@@ -32,12 +32,18 @@ export function FunctionChart({
     if (!funcion) return [];
 
     const points: { x: number; y: number | null }[] = [];
-    const step = (xs - xi) / 200;
-    
+    const xMin = xi === xs ? xi - 5 : xi;
+    const xMax = xi === xs ? xs + 5 : xs;
+    const step = (xMax - xMin) / 200;
+
+    if (step === 0) {
+      return [];
+    }
+
     // Convertir sintaxis Python (**) a sintaxis mathjs (^)
     const convertedFuncion = funcion.replace(/\*\*/g, "^");
 
-    for (let x = xi; x <= xs; x += step) {
+    for (let x = xMin; x <= xMax; x += step) {
       try {
         const y = evaluate(convertedFuncion, { x });
         if (typeof y === "number" && isFinite(y) && Math.abs(y) < 1000) {
@@ -79,7 +85,7 @@ export function FunctionChart({
             dataKey="x"
             stroke="var(--muted-foreground)"
             fontSize={12}
-            tickFormatter={(v) => v.toFixed(1)}
+            tickFormatter={(v) => v.toFixed(2)}
           />
           <YAxis
             stroke="var(--muted-foreground)"

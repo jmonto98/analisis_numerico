@@ -28,6 +28,22 @@ const getDefaultFormData = (method: NumericalMethod): FormData => {
   }
 };
 
+const getEmptyFormData = (method: NumericalMethod): FormData => {
+  const common = {
+    funcion: "",
+    tol: "",
+    error_type: "relative" as const,
+    niter: 0,
+  };
+
+  switch (method) {
+    case "biseccion":
+      return { ...common, xi: 0, xs: 0 };
+    case "newton":
+      return { ...common, x0: 0 };
+  }
+};
+
 export function NumericalCalculator() {
   const [selectedMethod, setSelectedMethod] = useState<NumericalMethod>("biseccion");
   const [formData, setFormData] = useState<FormData>(getDefaultFormData("biseccion"));
@@ -45,6 +61,15 @@ export function NumericalCalculator() {
     setMessage(undefined);
     setError(null);
   }, []);
+
+  const handleClear = () => {
+    setFormData(getEmptyFormData(selectedMethod));
+    setIterations([]);
+    setRoot(undefined);
+    setMessage(undefined);
+    setError(null);
+    setIsLoading(false);
+  };
 
   const buildPayload = () => {
     const common = {
@@ -126,7 +151,8 @@ export function NumericalCalculator() {
 
   const getChartBounds = () => {
     if (selectedMethod === "biseccion" && "xi" in formData && "xs" in formData) {
-      const margin = Math.abs(formData.xs - formData.xi) * 0.5;
+      const delta = Math.abs(formData.xs - formData.xi);
+      const margin = delta > 0 ? delta * 0.5 : 5;
       return {
         xMin: Math.min(formData.xi, formData.xs) - margin,
         xMax: Math.max(formData.xi, formData.xs) + margin,
@@ -178,6 +204,14 @@ export function NumericalCalculator() {
                 ) : (
                   "Calcular"
                 )}
+              </Button>
+              <Button
+                onClick={handleClear}
+                variant="secondary"
+                className="w-full"
+                disabled={isLoading}
+              >
+                Limpiar
               </Button>
               {error && (
                 <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-3">

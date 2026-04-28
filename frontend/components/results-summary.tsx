@@ -16,8 +16,16 @@ export function ResultsSummary({ iterations, root, message }: ResultsSummaryProp
   const lastIteration = iterations[iterations.length - 1];
   
   // Obtener los valores según el método
-  const x = "x" in lastIteration ? lastIteration.x : "xm" in lastIteration ? lastIteration.xm : 0;
-  const fx = "f_x" in lastIteration ? lastIteration.f_x : "f_xm" in lastIteration ? lastIteration.f_xm : 0;
+  const x = "x" in lastIteration && typeof lastIteration.x === "number"
+    ? lastIteration.x
+    : "xm" in lastIteration && typeof lastIteration.xm === "number"
+    ? lastIteration.xm
+    : 0;
+  const fx = "f_x" in lastIteration && typeof lastIteration.f_x === "number"
+    ? lastIteration.f_x
+    : "f_xm" in lastIteration && typeof lastIteration.f_xm === "number"
+    ? lastIteration.f_xm
+    : 0;
   const error = lastIteration.error ?? 0;
 
   const formatExponential = (num: number) => {
@@ -34,7 +42,7 @@ export function ResultsSummary({ iterations, root, message }: ResultsSummaryProp
             Raíz Aproximada
           </span>
           <span className="text-lg font-mono font-medium text-foreground">
-            {root?.toFixed(8) || x.toFixed(8)}
+            {root !== undefined ? root.toFixed(8) : x.toFixed(8)}
           </span>
         </div>
         <div className="flex flex-col">

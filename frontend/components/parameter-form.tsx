@@ -50,7 +50,7 @@ export function ParameterForm({ method, formData, onChange }: ParameterFormProps
           id="funcion"
           value={(formData as CommonParams).funcion}
           onChange={(e) => handleChange("funcion", e.target.value)}
-          placeholder="Ej: x**3 - x - 2"
+          
           className="bg-secondary border-border font-mono"
         />
         <p className="text-xs text-muted-foreground">
@@ -116,7 +116,7 @@ export function ParameterForm({ method, formData, onChange }: ParameterFormProps
             id="tol"
             value={(formData as CommonParams).tol}
             onChange={(e) => handleChange("tol", e.target.value)}
-            placeholder="1e-6"
+            
             className="bg-secondary border-border font-mono"
           />
         </div>
