@@ -1,0 +1,60 @@
+"use client";
+
+import type { IterationResult } from "@/lib/types";
+
+interface ResultsSummaryProps {
+  iterations: IterationResult[];
+  root?: number;
+  message?: string;
+}
+
+export function ResultsSummary({ iterations, root, message }: ResultsSummaryProps) {
+  if (iterations.length === 0) {
+    return null;
+  }
+
+  const lastIteration = iterations[iterations.length - 1];
+
+  return (
+    <div className="bg-primary/10 border border-primary/30 rounded-lg p-4">
+      <h3 className="text-lg font-semibold text-primary mb-3">Resultado</h3>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="flex flex-col">
+          <span className="text-xs text-muted-foreground uppercase tracking-wide">
+            Raiz Aproximada
+          </span>
+          <span className="text-lg font-mono font-medium text-foreground">
+            {root?.toFixed(8) || lastIteration.xm.toFixed(8)}
+          </span>
+        </div>
+        <div className="flex flex-col">
+          <span className="text-xs text-muted-foreground uppercase tracking-wide">
+            f(raiz)
+          </span>
+          <span className="text-lg font-mono font-medium text-foreground">
+            {lastIteration.fxm.toExponential(4)}
+          </span>
+        </div>
+        <div className="flex flex-col">
+          <span className="text-xs text-muted-foreground uppercase tracking-wide">
+            Error Final
+          </span>
+          <span className="text-lg font-mono font-medium text-foreground">
+            {lastIteration.error.toExponential(4)}
+          </span>
+        </div>
+        <div className="flex flex-col">
+          <span className="text-xs text-muted-foreground uppercase tracking-wide">
+            Iteraciones
+          </span>
+          <span className="text-lg font-mono font-medium text-foreground">
+            {iterations.length}
+          </span>
+        </div>
+      </div>
+      {message && (
+        <p className="mt-3 text-sm text-muted-foreground">{message}</p>
+      )}
+    </div>
+  );
+}
