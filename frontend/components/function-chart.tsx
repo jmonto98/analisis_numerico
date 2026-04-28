@@ -17,44 +17,50 @@ import type { IterationResult } from "@/lib/types";
 
 interface FunctionChartProps {
   funcion: string;
-  iterations: IterationResult[];
-  xMin?: number;
-  xMax?: number;
+  niter: IterationResult[];
+  xi?: number;
+  xs?: number;
 }
 
 export function FunctionChart({
   funcion,
-  iterations,
-  xMin = -10,
-  xMax = 10,
+  niter,
+  xi = -10,
+  xs = 10,
 }: FunctionChartProps) {
   const chartData = useMemo(() => {
     if (!funcion) return [];
 
     const points: { x: number; y: number | null }[] = [];
-    const step = (xMax - xMin) / 200;
+    const step = (xs - xi) / 200;
+    
+    // Convertir sintaxis Python (**) a sintaxis mathjs (^)
+    const convertedFuncion = funcion.replace(/\*\*/g, "^");
 
-    for (let x = xMin; x <= xMax; x += step) {
+    for (let x = xi; x <= xs; x += step) {
       try {
-        const y = evaluate(funcion, { x });
+        const y = evaluate(convertedFuncion, { x });
         if (typeof y === "number" && isFinite(y) && Math.abs(y) < 1000) {
           points.push({ x: parseFloat(x.toFixed(4)), y: parseFloat(y.toFixed(6)) });
         } else {
           points.push({ x: parseFloat(x.toFixed(4)), y: null });
         }
-      } catch {
+      } catch (err) {
+        console.error(`Error evaluando función en x=${x}:`, err);
         points.push({ x: parseFloat(x.toFixed(4)), y: null });
       }
     }
 
     return points;
-  }, [funcion, xMin, xMax]);
+  }, [funcion, xi, xs]);
 
   const rootPoint = useMemo(() => {
-    if (iterations.length === 0) return null;
-    const lastIteration = iterations[iterations.length - 1];
-    return { x: lastIteration.xm, y: lastIteration.fxm };
-  }, [iterations]);
+    if (niter.length === 0) return null;
+    const lastIteration = niter[niter.length - 1];
+    const x = "x" in lastIteration ? lastIteration.x : "xm" in lastIteration ? lastIteration.xm : 0;
+    const fx = "f_x" in lastIteration ? lastIteration.f_x : "f_xm" in lastIteration ? lastIteration.f_xm : 0;
+    return { x, y: fx };
+  }, [niter]);
 
   if (!funcion || chartData.length === 0) {
     return (
@@ -103,12 +109,12 @@ export function FunctionChart({
           />
           {rootPoint && (
             <ReferenceLine
-              x={rootPoint.x}
+              x={rootPoint.x ?? 0}
               stroke="var(--chart-5)"
               strokeWidth={2}
               strokeDasharray="3 3"
               label={{
-                value: `Raiz: ${rootPoint.x.toFixed(6)}`,
+                value: `Raiz: ${(rootPoint.x ?? 0).toFixed(6)}`,
                 position: "top",
                 fill: "var(--foreground)",
                 fontSize: 12,
