@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import math
-from typing import Callable, List, Optional
+from typing import Callable, List
 
 from sympy import Symbol, lambdify, sympify, diff, SympifyError
+
+from .schemas import NewtonRequest
 
 
 def _normalize_expression(expression: str) -> str:
@@ -66,19 +68,19 @@ def parse_function(expression: str) -> tuple[Callable[[float], float], Callable[
     return f, df
 
 
-def newton(funcion: str, x0: float, tol: float, niter: int, error_type: str = "relative") -> dict:
-    if tol <= 0:
+def newton(newton_request: NewtonRequest) -> dict:
+    if newton_request.tol <= 0:
         raise ValueError("La tolerancia debe ser mayor que cero.")
-    if niter <= 0:
+    if newton_request.niter <= 0:
         raise ValueError("El número de iteraciones debe ser mayor que cero.")
-    if error_type not in {"absolute", "relative"}:
+    if newton_request.error_type not in {"absolute", "relative"}:
         raise ValueError("El tipo de error debe ser 'absolute' o 'relative'.")
 
-    f, df = parse_function(funcion)
+    f, df = parse_function(newton_request.funcion)
 
     try:
-        fe = _validate_real_value(f(x0))
-        dfe = _validate_real_value(df(x0))
+        fe = _validate_real_value(f(newton_request.x0))
+        dfe = _validate_real_value(df(newton_request.x0))
     except Exception as exc:
         raise ValueError(f"Error al evaluar la función en el valor inicial: {exc}") from exc
 
@@ -88,22 +90,23 @@ def newton(funcion: str, x0: float, tol: float, niter: int, error_type: str = "r
         "root": None,
         "message": "",
         "success": False,
-        "error_type": error_type,
+        "error_type": newton_request.error_type,
     }
 
     # Primera iteración
-    iterations.append({"i": 0, "x": x0, "f_x": fe, "df_x": dfe, "error": None})
+    iterations.append({"i": 0, "x": newton_request.x0, "f_x": fe, "df_x": dfe, "error": None})
 
     if fe == 0:
-        result.update(root=x0, message=f"{x0} es raíz de f(x)", success=True)
+        result.update(root=newton_request.x0, message=f"{newton_request.x0} es raíz de f(x)", success=True)
         return result
 
     if dfe == 0:
-        result.update(message=f"La derivada es cero en x0 = {x0}. No se puede aplicar el método de Newton.")
+        result.update(message=f"La derivada es cero en x0 = {newton_request.x0}. No se puede aplicar el método de Newton.")
         return result
 
     # Iteraciones subsecuentes
-    for i in range(1, niter + 1):
+    x0 = newton_request.x0
+    for i in range(1, newton_request.niter + 1):
         xn = x0 - fe / dfe
         
         try:
@@ -112,13 +115,13 @@ def newton(funcion: str, x0: float, tol: float, niter: int, error_type: str = "r
         except Exception as exc:
             raise ValueError(f"Error al evaluar la función en iteración {i}: {exc}") from exc
 
-        error = _compute_error(xn, x0, error_type)
+        error = _compute_error(xn, x0, newton_request.error_type)
         iterations.append({"i": i, "x": xn, "f_x": fe, "df_x": dfe, "error": error})
 
-        if fe == 0 or error < tol:
+        if fe == 0 or error < newton_request.tol:
             result.update(
                 root=xn,
-                message=f"{xn} es una aproximación de una raíz con tolerancia={tol} usando error {error_type}",
+                message=f"{xn} es una aproximación de una raíz con tolerancia={newton_request.tol} usando error {newton_request.error_type}",
                 success=True,
             )
             return result
@@ -135,29 +138,7 @@ def newton(funcion: str, x0: float, tol: float, niter: int, error_type: str = "r
 
     result.update(
         root=xn,
-        message=f"Fracasó en {niter} iteraciones, última aproximación = {xn}",
+        message=f"Fracasó en {newton_request.niter} iteraciones, última aproximación = {xn}",
         success=False,
     )
     return result
-
-
-def graph_points(funcion: str, xi: float, xs: float, n_points: int = 180) -> list[dict]:
-    if xi == xs:
-        raise ValueError("xi y xs deben ser diferentes para generar la gráfica.")
-    if n_points <= 1:
-        raise ValueError("El número de puntos debe ser mayor que 1.")
-
-    f, _ = parse_function(funcion)
-    step = (xs - xi) / (n_points - 1)
-
-    points: list[dict] = []
-    for i in range(n_points):
-        x = xi + step * i
-        try:
-            y = _validate_real_value(f(x))
-        except Exception:
-            y = None
-
-        points.append({"x": x, "y": y})
-
-    return points

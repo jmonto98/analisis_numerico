@@ -3,7 +3,6 @@ from pydantic import BaseModel, Field
 
 
 class NewtonRequest(BaseModel):
-    method: Literal["newton"]
     funcion: str
     x0: float = Field(..., description="Valor inicial")
     tol: float = Field(..., gt=0, description="Tolerancia positiva")
@@ -28,21 +27,3 @@ class NewtonResponse(BaseModel):
     message: str
     success: bool
     error_type: str
-
-
-class GraphPoint(BaseModel):
-    x: float
-    y: Optional[float] = None
-
-
-class GraphRequest(BaseModel):
-    funcion: str
-    xi: float
-    xs: float
-    n_points: int = Field(180, gt=1, description="Cantidad de puntos a usar para la gráfica")
-
-
-class GraphResponse(BaseModel):
-    points: List[GraphPoint]
-    success: bool
-    message: str
