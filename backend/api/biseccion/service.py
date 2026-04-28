@@ -1,10 +1,9 @@
 from __future__ import annotations
-
 import math
-from typing import Callable, List, Optional
-
+from typing import Callable, List
 from sympy import Symbol, lambdify, sympify, SympifyError
 
+from .schemas import BiseccionRequest
 
 def _normalize_expression(expression: str) -> str:
     return expression.replace("^", "**").strip()
@@ -58,21 +57,22 @@ def parse_function(expression: str) -> Callable[[float], float]:
     return f
 
 
-def biseccion(funcion: str, xi: float, xs: float, tol: float, niter: int, error_type: str = "relative") -> dict:
-    if xi == xs:
+def biseccion(biseccion: BiseccionRequest) -> dict:
+    
+    if biseccion.xi == biseccion.xs:
         raise ValueError("xi y xs deben ser diferentes.")
-    if tol <= 0:
+    if biseccion.tol <= 0:
         raise ValueError("La tolerancia debe ser mayor que cero.")
-    if niter <= 0:
+    if biseccion.niter <= 0:
         raise ValueError("El número de iteraciones debe ser mayor que cero.")
-    if error_type not in {"absolute", "relative"}:
+    if biseccion.error_type not in {"absolute", "relative"}:
         raise ValueError("El tipo de error debe ser 'absolute' o 'relative'.")
 
-    f = parse_function(funcion)
+    f = parse_function(biseccion.funcion)
 
     try:
-        fi = _validate_real_value(f(xi))
-        fs = _validate_real_value(f(xs))
+        fi = _validate_real_value(f(biseccion.xi))
+        fs = _validate_real_value(f(biseccion.xs))
     except Exception as exc:
         raise ValueError(f"Error al evaluar la función en el intervalo inicial: {exc}") from exc
 
@@ -82,22 +82,22 @@ def biseccion(funcion: str, xi: float, xs: float, tol: float, niter: int, error_
         "root": None,
         "message": "",
         "success": False,
-        "error_type": error_type,
+        "error_type": biseccion.error_type,
     }
 
     if fi == 0:
-        result.update(root=xi, message=f"{xi} es raíz de f(x)", success=True)
+        result.update(root=biseccion.xi, message=f"{biseccion.xi} es raíz de f(x)", success=True)
         return result
 
     if fs == 0:
-        result.update(root=xs, message=f"{xs} es raíz de f(x)", success=True)
+        result.update(root=biseccion.xs, message=f"{biseccion.xs} es raíz de f(x)", success=True)
         return result
 
     if fi * fs > 0:
         result.update(message="El intervalo es inadecuado para el método de bisección.")
         return result
 
-    xm = (xi + xs) / 2.0
+    xm = (biseccion.xi + biseccion.xs) / 2.0
 
     try:
         f_xm = _validate_real_value(f(xm))
@@ -110,7 +110,11 @@ def biseccion(funcion: str, xi: float, xs: float, tol: float, niter: int, error_
         result.update(root=xm, message=f"{xm} es raíz de f(x)", success=True)
         return result
 
-    for i in range(1, niter + 1):
+    # Inicializar variables locales para el loop
+    xi = biseccion.xi
+    xs = biseccion.xs
+
+    for i in range(1, biseccion.niter + 1):
         if fi * f_xm < 0:
             xs = xm
             fs = f_xm
@@ -126,41 +130,20 @@ def biseccion(funcion: str, xi: float, xs: float, tol: float, niter: int, error_
         except Exception as exc:
             raise ValueError(f"Error al evaluar la función en xm: {exc}") from exc
 
-        error = _compute_error(xm, xa, error_type)
+        error = _compute_error(xm, xa, biseccion.error_type)
         iterations.append({"i": i, "xm": xm, "f_xm": f_xm, "error": error})
 
-        if f_xm == 0 or error < tol:
+        if f_xm == 0 or error < biseccion.tol:
             result.update(
                 root=xm,
-                message=f"{xm} es una aproximación de una raíz con tolerancia={tol} usando error {error_type}",
+                message=f"{xm} es una aproximación de una raíz con tolerancia={biseccion.tol} usando error {biseccion.error_type}",
                 success=True,
             )
             return result
 
     result.update(
         root=xm,
-        message=f"Fracasó en {niter} iteraciones, última aproximación = {xm}",
+        message=f"Fracasó en {biseccion.niter} iteraciones, última aproximación = {xm}",
         success=False,
     )
     return result
-
-
-def graph_points(funcion: str, xi: float, xs: float, n_points: int = 180) -> list[dict]:
-    if xi == xs:
-        raise ValueError("xi y xs deben ser diferentes para generar la gráfica.")
-    if n_points <= 1:
-        raise ValueError("El número de puntos debe ser mayor que 1.")
-
-    f = parse_function(funcion)
-    step = (xs - xi) / (n_points - 1)
-
-    points: list[dict] = []
-    for i in range(n_points):
-        x = xi + step * i
-        try:
-            y = _validate_real_value(f(x))
-        except Exception:
-            y = None
-        points.append({"x": x, "y": y})
-
-    return points
