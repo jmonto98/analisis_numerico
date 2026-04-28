@@ -10,7 +10,6 @@ app = FastAPI(
     description="Backend FastAPI para el análisis numérico.",
 )
 
-app = FastAPI()
 app.include_router(biseccion_router)
 app.include_router(newton_router)
 

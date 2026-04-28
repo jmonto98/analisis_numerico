@@ -14,21 +14,17 @@ import { METHODS, type NumericalMethod, type IterationResult, type MethodRespons
 
 const getDefaultFormData = (method: NumericalMethod): FormData => {
   const common = {
-    funcion: "x^3 - x - 2",
-    tolerancia: "1e-6",
-    tipoError: "relativo" as const,
-    maxIteraciones: 100,
+    funcion: "x**3 - x - 2",
+    tol: "1e-6",
+    error_type: "relative" as const,
+    niter: 100,
   };
 
   switch (method) {
     case "biseccion":
-      return { ...common, x1: 1, xs: 2 };
-    case "punto-fijo":
+      return { ...common, xi: 1, xs: 2 };
+    case "newton":
       return { ...common, x0: 1.5 };
-    case "newton-raphson":
-      return { ...common, derivada: "3*x^2 - 1", x0: 1.5 };
-    case "secante":
-      return { ...common, x0: 1, x1: 2 };
   }
 };
 
@@ -50,22 +46,50 @@ export function NumericalCalculator() {
     setError(null);
   }, []);
 
+  const buildPayload = () => {
+    const common = {
+      funcion: formData.funcion,
+      tol: parseFloat(formData.tol),
+      error_type: formData.error_type,
+      niter: formData.niter,
+    };
+
+    if (selectedMethod === "biseccion" && "xi" in formData) {
+      return {
+        ...common,
+        xi: formData.xi,
+        xs: formData.xs,
+      };
+    } else if (selectedMethod === "newton" && "x0" in formData) {
+      return {
+        ...common,
+        x0: formData.x0,
+      };
+    }
+
+    return null;
+  };
+
   const handleCalculate = async () => {
     setIsLoading(true);
     setError(null);
 
     const methodConfig = METHODS.find((m) => m.id === selectedMethod);
     if (!methodConfig) {
-      setError("Metodo no encontrado");
+      setError("Método no encontrado");
+      setIsLoading(false);
+      return;
+    }
+
+    const payload = buildPayload();
+    if (!payload) {
+      setError("Error al construir el payload");
       setIsLoading(false);
       return;
     }
 
     try {
-      const payload = {
-        ...formData,
-        tolerancia: parseFloat(formData.tolerancia),
-      };
+      console.log("Enviando payload al backend:", payload);
 
       const response = await fetch(`${API_BASE_URL}${methodConfig.endpoint}`, {
         method: "POST",
@@ -76,7 +100,8 @@ export function NumericalCalculator() {
       });
 
       if (!response.ok) {
-        throw new Error(`Error del servidor: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || `Error del servidor: ${response.status}`);
       }
 
       const data: MethodResponse = await response.json();
@@ -86,7 +111,7 @@ export function NumericalCalculator() {
         setRoot(data.root);
         setMessage(data.message);
       } else {
-        setError(data.message || "Error en el calculo");
+        setError(data.message || "Error en el cálculo");
       }
     } catch (err) {
       setError(
@@ -100,11 +125,11 @@ export function NumericalCalculator() {
   };
 
   const getChartBounds = () => {
-    if (selectedMethod === "biseccion" && "x1" in formData && "xs" in formData) {
-      const margin = Math.abs(formData.xs - formData.x1) * 0.5;
+    if (selectedMethod === "biseccion" && "xi" in formData && "xs" in formData) {
+      const margin = Math.abs(formData.xs - formData.xi) * 0.5;
       return {
-        xMin: Math.min(formData.x1, formData.xs) - margin,
-        xMax: Math.max(formData.x1, formData.xs) + margin,
+        xMin: Math.min(formData.xi, formData.xs) - margin,
+        xMax: Math.max(formData.xi, formData.xs) + margin,
       };
     }
     if ("x0" in formData) {
@@ -120,10 +145,10 @@ export function NumericalCalculator() {
       <div className="max-w-7xl mx-auto">
         <header className="mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
-            Calculadora de Metodos Numericos
+            Calculadora de Métodos Numéricos
           </h1>
           <p className="text-muted-foreground">
-            Herramienta para el analisis y calculo de raices de funciones
+            Herramienta para el análisis y cálculo de raíces de funciones
           </p>
         </header>
 
@@ -131,7 +156,7 @@ export function NumericalCalculator() {
           {/* Panel de configuracion */}
           <Card className="lg:col-span-1 bg-card border-border">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg text-foreground">Configuracion</CardTitle>
+              <CardTitle className="text-lg text-foreground">Configuración</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-6">
               <MethodSelector value={selectedMethod} onChange={handleMethodChange} />
@@ -168,14 +193,14 @@ export function NumericalCalculator() {
 
             <Card className="bg-card border-border">
               <CardHeader className="pb-4">
-                <CardTitle className="text-lg text-foreground">Grafica de la Funcion</CardTitle>
+                <CardTitle className="text-lg text-foreground">Gráfica de la Función</CardTitle>
               </CardHeader>
               <CardContent>
                 <FunctionChart
                   funcion={formData.funcion}
-                  iterations={iterations}
-                  xMin={chartBounds.xMin}
-                  xMax={chartBounds.xMax}
+                  niter={iterations}
+                  xi={chartBounds.xMin}
+                  xs={chartBounds.xMax}
                 />
               </CardContent>
             </Card>
@@ -193,10 +218,7 @@ export function NumericalCalculator() {
 
         <footer className="mt-8 text-center text-sm text-muted-foreground">
           <p>
-            Configura la URL del backend en{" "}
-            <code className="bg-secondary px-1.5 py-0.5 rounded text-xs">
-              NEXT_PUBLIC_API_URL
-            </code>
+            Powered by Next.js, FastAPI y React. Developed by Daniel Posada y John Montoya.
           </p>
         </footer>
       </div>
