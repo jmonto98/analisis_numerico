@@ -31,9 +31,10 @@ export function IterationsTable({ iterations }: IterationsTableProps) {
     return num.toFixed(8);
   };
 
-  // Detectar el tipo de método: Newton (tiene df_x), Punto Fijo (tiene xi y g_xi), o Bisección
+  // Detectar el tipo de método: Newton (df_x), Punto Fijo (xi + g_xi), Secante (xi + f_xi pero no g_xi), o Bisección (xm)
   const isNewton = iterations.some((it) => "df_x" in it && it.df_x !== undefined);
   const isPuntoFijo = iterations.some((it) => "xi" in it && it.xi !== undefined && "g_xi" in it);
+  const isSecante = iterations.some((it) => "xi" in it && it.xi !== undefined && "f_xi" in it && !("g_xi" in it));
 
   return (
     <div className="overflow-auto max-h-[400px] rounded-lg border border-border">
@@ -53,7 +54,17 @@ export function IterationsTable({ iterations }: IterationsTableProps) {
                 </TableHead>
               </>
             )}
-            {!isPuntoFijo && (
+            {isSecante && (
+              <>
+                <TableHead className="text-center font-semibold text-foreground">
+                  xi
+                </TableHead>
+                <TableHead className="text-center font-semibold text-foreground">
+                  f(xi)
+                </TableHead>
+              </>
+            )}
+            {!isPuntoFijo && !isSecante && (
               <>
                 <TableHead className="text-center font-semibold text-foreground">
                   {isNewton ? "x" : "xm"}
@@ -82,6 +93,9 @@ export function IterationsTable({ iterations }: IterationsTableProps) {
             if (isPuntoFijo) {
               col1 = "xi" in iteration ? iteration.xi : undefined;
               col2 = "g_xi" in iteration ? iteration.g_xi : undefined;
+            } else if (isSecante) {
+              col1 = "xi" in iteration ? iteration.xi : undefined;
+              col2 = "f_xi" in iteration ? iteration.f_xi : undefined;
             } else {
               col1 =
                 "x" in iteration ? iteration.x : "xm" in iteration ? iteration.xm : undefined;

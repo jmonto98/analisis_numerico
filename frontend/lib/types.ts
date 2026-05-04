@@ -1,4 +1,4 @@
-export type NumericalMethod = "biseccion" | "newton" | "punto-fijo";
+export type NumericalMethod = "biseccion" | "newton" | "punto-fijo" | "secante";
 
 export type ErrorType = "relative" | "absolute";
 
@@ -48,7 +48,16 @@ export interface PuntoFijoParams {
   niter: number;
 }
 
-export type MethodParams = BisectionParams | NewtonParams | PuntoFijoParams;
+export interface SecanteParams {
+  funcion: string;
+  x0: number;
+  x1: number;
+  tol: number;
+  error_type: ErrorType;
+  niter: number;
+}
+
+export type MethodParams = BisectionParams | NewtonParams | PuntoFijoParams | SecanteParams;
 
 export interface MethodConfig {
   id: NumericalMethod;
@@ -75,5 +84,11 @@ export const METHODS: MethodConfig[] = [
     name: "Punto Fijo",
     description: "Método que convierte la ecuación a una iteración g(x) = f(x) + x",
     endpoint: "/punto-fijo",
+  },
+  {
+    id: "secante",
+    name: "Secante",
+    description: "Método que aproxima la derivada usando dos puntos iniciales",
+    endpoint: "/secante",
   },
 ];

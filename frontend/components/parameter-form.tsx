@@ -31,7 +31,12 @@ interface PuntoFijoFormData extends CommonParams {
   x0: number;
 }
 
-export type FormData = BisectionFormData | NewtonFormData | PuntoFijoFormData;
+interface SecanteFormData extends CommonParams {
+  x0: number;
+  x1: number;
+}
+
+export type FormData = BisectionFormData | NewtonFormData | PuntoFijoFormData | SecanteFormData;
 
 interface ParameterFormProps {
   method: NumericalMethod;
@@ -124,6 +129,37 @@ export function ParameterForm({ method, formData, onChange }: ParameterFormProps
               className="bg-secondary border-border"
             />
           </div>
+        )}
+
+        {method === "secante" && (
+          <>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="x0" className="text-sm font-medium">
+                x0 (primer valor)
+              </Label>
+              <Input
+                id="x0"
+                type="number"
+                step="any"
+                value={(formData as SecanteFormData).x0}
+                onChange={(e) => handleChange("x0", parseFloat(e.target.value) || 0)}
+                className="bg-secondary border-border"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="x1" className="text-sm font-medium">
+                x1 (segundo valor)
+              </Label>
+              <Input
+                id="x1"
+                type="number"
+                step="any"
+                value={(formData as SecanteFormData).x1}
+                onChange={(e) => handleChange("x1", parseFloat(e.target.value) || 0)}
+                className="bg-secondary border-border"
+              />
+            </div>
+          </>
         )}
       </div>
 

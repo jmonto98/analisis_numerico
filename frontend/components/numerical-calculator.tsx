@@ -27,6 +27,8 @@ const getDefaultFormData = (method: NumericalMethod): FormData => {
       return { ...common, x0: 1.5 };
     case "punto-fijo":
       return { ...common, x0: 1.5 };
+    case "secante":
+      return { ...common, x0: 1, x1: 2 };
   }
 };
 
@@ -45,6 +47,8 @@ const getEmptyFormData = (method: NumericalMethod): FormData => {
       return { ...common, x0: 0 };
     case "punto-fijo":
       return { ...common, x0: 0 };
+    case "secante":
+      return { ...common, x0: 0, x1: 0 };
   }
 };
 
@@ -89,15 +93,21 @@ export function NumericalCalculator() {
         xi: formData.xi,
         xs: formData.xs,
       };
-    } else if (selectedMethod === "newton" && "x0" in formData) {
+    } else if (selectedMethod === "newton" && "x0" in formData && !("x1" in formData)) {
       return {
         ...common,
         x0: formData.x0,
       };
-    } else if (selectedMethod === "punto-fijo" && "x0" in formData) {
+    } else if (selectedMethod === "punto-fijo" && "x0" in formData && !("x1" in formData)) {
       return {
         ...common,
         x0: formData.x0,
+      };
+    } else if (selectedMethod === "secante" && "x0" in formData && "x1" in formData) {
+      return {
+        ...common,
+        x0: formData.x0,
+        x1: formData.x1,
       };
     }
 
