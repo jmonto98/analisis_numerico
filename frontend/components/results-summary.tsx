@@ -16,7 +16,9 @@ export function ResultsSummary({ iterations, root, message }: ResultsSummaryProp
   const lastIteration = iterations[iterations.length - 1];
   
   // Obtener los valores según el método
-  const x = "x" in lastIteration && typeof lastIteration.x === "number"
+  const x = "xi" in lastIteration && typeof lastIteration.xi === "number"
+    ? lastIteration.xi
+    : "x" in lastIteration && typeof lastIteration.x === "number"
     ? lastIteration.x
     : "xm" in lastIteration && typeof lastIteration.xm === "number"
     ? lastIteration.xm

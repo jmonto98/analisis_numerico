@@ -27,7 +27,11 @@ interface NewtonFormData extends CommonParams {
   x0: number;
 }
 
-export type FormData = BisectionFormData | NewtonFormData;
+interface PuntoFijoFormData extends CommonParams {
+  x0: number;
+}
+
+export type FormData = BisectionFormData | NewtonFormData | PuntoFijoFormData;
 
 interface ParameterFormProps {
   method: NumericalMethod;
@@ -100,6 +104,22 @@ export function ParameterForm({ method, formData, onChange }: ParameterFormProps
               type="number"
               step="any"
               value={(formData as NewtonFormData).x0}
+              onChange={(e) => handleChange("x0", parseFloat(e.target.value) || 0)}
+              className="bg-secondary border-border"
+            />
+          </div>
+        )}
+
+        {method === "punto-fijo" && (
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="x0" className="text-sm font-medium">
+              x0 (valor inicial)
+            </Label>
+            <Input
+              id="x0"
+              type="number"
+              step="any"
+              value={(formData as PuntoFijoFormData).x0}
               onChange={(e) => handleChange("x0", parseFloat(e.target.value) || 0)}
               className="bg-secondary border-border"
             />

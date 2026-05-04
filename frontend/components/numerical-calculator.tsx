@@ -25,6 +25,8 @@ const getDefaultFormData = (method: NumericalMethod): FormData => {
       return { ...common, xi: 1, xs: 2 };
     case "newton":
       return { ...common, x0: 1.5 };
+    case "punto-fijo":
+      return { ...common, x0: 1.5 };
   }
 };
 
@@ -40,6 +42,8 @@ const getEmptyFormData = (method: NumericalMethod): FormData => {
     case "biseccion":
       return { ...common, xi: 0, xs: 0 };
     case "newton":
+      return { ...common, x0: 0 };
+    case "punto-fijo":
       return { ...common, x0: 0 };
   }
 };
@@ -86,6 +90,11 @@ export function NumericalCalculator() {
         xs: formData.xs,
       };
     } else if (selectedMethod === "newton" && "x0" in formData) {
+      return {
+        ...common,
+        x0: formData.x0,
+      };
+    } else if (selectedMethod === "punto-fijo" && "x0" in formData) {
       return {
         ...common,
         x0: formData.x0,

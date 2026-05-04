@@ -1,4 +1,4 @@
-export type NumericalMethod = "biseccion" | "newton";
+export type NumericalMethod = "biseccion" | "newton" | "punto-fijo";
 
 export type ErrorType = "relative" | "absolute";
 
@@ -6,8 +6,11 @@ export interface IterationResult {
   i: number;
   xm?: number;
   x?: number;
+  xi?: number;
   f_xm?: number;
   f_x?: number;
+  f_xi?: number;
+  g_xi?: number;
   df_x?: number;
   error: number | null;
 }
@@ -37,7 +40,15 @@ export interface NewtonParams {
   niter: number;
 }
 
-export type MethodParams = BisectionParams | NewtonParams;
+export interface PuntoFijoParams {
+  funcion: string;
+  x0: number;
+  tol: number;
+  error_type: ErrorType;
+  niter: number;
+}
+
+export type MethodParams = BisectionParams | NewtonParams | PuntoFijoParams;
 
 export interface MethodConfig {
   id: NumericalMethod;
@@ -58,5 +69,11 @@ export const METHODS: MethodConfig[] = [
     name: "Newton-Raphson",
     description: "Método que usa la derivada (calculada automáticamente) para convergencia rápida",
     endpoint: "/newton",
+  },
+  {
+    id: "punto-fijo",
+    name: "Punto Fijo",
+    description: "Método que convierte la ecuación a una iteración g(x) = f(x) + x",
+    endpoint: "/punto-fijo",
   },
 ];

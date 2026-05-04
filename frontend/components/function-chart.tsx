@@ -63,10 +63,36 @@ export function FunctionChart({
   const rootPoint = useMemo(() => {
     if (niter.length === 0) return null;
     const lastIteration = niter[niter.length - 1];
-    const x = "x" in lastIteration ? lastIteration.x : "xm" in lastIteration ? lastIteration.xm : 0;
-    const fx = "f_x" in lastIteration ? lastIteration.f_x : "f_xm" in lastIteration ? lastIteration.f_xm : 0;
+    
+    // Para Punto Fijo, el x es xi
+    const x = "xi" in lastIteration 
+      ? lastIteration.xi 
+      : "x" in lastIteration 
+      ? lastIteration.x 
+      : "xm" in lastIteration 
+      ? lastIteration.xm 
+      : 0;
+    
+    // Para Punto Fijo, calculamos f(x) en el punto (no g_xi)
+    // Para Newton y Bisección, usamos f(x) o f(xm)
+    let fx: number;
+    if ("f_x" in lastIteration) {
+      fx = lastIteration.f_x ?? 0;
+    } else if ("f_xm" in lastIteration) {
+      fx = lastIteration.f_xm ?? 0;
+    } else {
+      // Para Punto Fijo, debemos calcular f(x) en el punto raíz
+      try {
+        const convertedFuncion = funcion.replace(/\*\*/g, "^");
+        fx = evaluate(convertedFuncion, { x });
+        if (!isFinite(fx)) fx = 0;
+      } catch {
+        fx = 0;
+      }
+    }
+    
     return { x, y: fx };
-  }, [niter]);
+  }, [niter, funcion]);
 
   if (!funcion || chartData.length === 0) {
     return (

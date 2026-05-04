@@ -31,8 +31,9 @@ export function IterationsTable({ iterations }: IterationsTableProps) {
     return num.toFixed(8);
   };
 
-  // Detectar si es Newton (tiene df_x) o Bisección
+  // Detectar el tipo de método: Newton (tiene df_x), Punto Fijo (tiene xi y g_xi), o Bisección
   const isNewton = iterations.some((it) => "df_x" in it && it.df_x !== undefined);
+  const isPuntoFijo = iterations.some((it) => "xi" in it && it.xi !== undefined && "g_xi" in it);
 
   return (
     <div className="overflow-auto max-h-[400px] rounded-lg border border-border">
@@ -42,12 +43,26 @@ export function IterationsTable({ iterations }: IterationsTableProps) {
             <TableHead className="text-center font-semibold text-foreground w-24">
               i
             </TableHead>
-            <TableHead className="text-center font-semibold text-foreground">
-              {isNewton ? "x" : "xm"}
-            </TableHead>
-            <TableHead className="text-center font-semibold text-foreground">
-              {isNewton ? "f(x)" : "f(xm)"}
-            </TableHead>
+            {isPuntoFijo && (
+              <>
+                <TableHead className="text-center font-semibold text-foreground">
+                  xi
+                </TableHead>
+                <TableHead className="text-center font-semibold text-foreground">
+                  g(xi)
+                </TableHead>
+              </>
+            )}
+            {!isPuntoFijo && (
+              <>
+                <TableHead className="text-center font-semibold text-foreground">
+                  {isNewton ? "x" : "xm"}
+                </TableHead>
+                <TableHead className="text-center font-semibold text-foreground">
+                  {isNewton ? "f(x)" : "f(xm)"}
+                </TableHead>
+              </>
+            )}
             {isNewton && (
               <TableHead className="text-center font-semibold text-foreground">
                 f&apos;(x)
@@ -60,10 +75,20 @@ export function IterationsTable({ iterations }: IterationsTableProps) {
         </TableHeader>
         <TableBody>
           {iterations.map((iteration, index) => {
-            const x = "x" in iteration ? iteration.x : "xm" in iteration ? iteration.xm : 0;
-            const fx =
-              "f_x" in iteration ? iteration.f_x : "f_xm" in iteration ? iteration.f_xm : 0;
-            const dfx = "df_x" in iteration ? iteration.df_x : null;
+            let col1: number | null | undefined;
+            let col2: number | null | undefined;
+            let dfx: number | null | undefined = null;
+
+            if (isPuntoFijo) {
+              col1 = "xi" in iteration ? iteration.xi : undefined;
+              col2 = "g_xi" in iteration ? iteration.g_xi : undefined;
+            } else {
+              col1 =
+                "x" in iteration ? iteration.x : "xm" in iteration ? iteration.xm : undefined;
+              col2 =
+                "f_x" in iteration ? iteration.f_x : "f_xm" in iteration ? iteration.f_xm : undefined;
+              dfx = "df_x" in iteration ? iteration.df_x : null;
+            }
 
             return (
               <TableRow
@@ -76,10 +101,10 @@ export function IterationsTable({ iterations }: IterationsTableProps) {
               >
                 <TableCell className="text-center font-mono">{iteration.i}</TableCell>
                 <TableCell className="text-center font-mono text-sm">
-                  {formatNumber(x)}
+                  {formatNumber(col1)}
                 </TableCell>
                 <TableCell className="text-center font-mono text-sm">
-                  {formatNumber(fx)}
+                  {formatNumber(col2)}
                 </TableCell>
                 {isNewton && (
                   <TableCell className="text-center font-mono text-sm">
