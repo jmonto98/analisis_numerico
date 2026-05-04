@@ -63,7 +63,29 @@ export function NumericalCalculator() {
 
   const handleMethodChange = useCallback((method: NumericalMethod) => {
     setSelectedMethod(method);
-    setFormData(getDefaultFormData(method));
+    // Mantener valores comunes (función, tolerancia, error_type, iteraciones)
+    setFormData((prevData) => {
+      const commonData = {
+        funcion: prevData.funcion,
+        tol: prevData.tol,
+        error_type: prevData.error_type,
+        niter: prevData.niter,
+      };
+      
+      // Agregar parámetros específicos del nuevo método
+      const newMethod = method;
+      switch (newMethod) {
+        case "biseccion":
+          return { ...commonData, xi: 1, xs: 2 } as FormData;
+        case "newton":
+          return { ...commonData, x0: 1.5 } as FormData;
+        case "punto-fijo":
+          return { ...commonData, x0: 1.5 } as FormData;
+        case "secante":
+          return { ...commonData, x0: 1, x1: 2 } as FormData;
+      }
+    });
+    // Limpiar solo los resultados
     setIterations([]);
     setRoot(undefined);
     setMessage(undefined);
@@ -169,16 +191,24 @@ export function NumericalCalculator() {
   };
 
   const getChartBounds = () => {
+    // Margen consistente: 0.5
+    const MARGIN = 0.5;
+    
     if (selectedMethod === "biseccion" && "xi" in formData && "xs" in formData) {
-      const delta = Math.abs(formData.xs - formData.xi);
-      const margin = delta > 0 ? delta * 0.5 : 5;
       return {
-        xMin: Math.min(formData.xi, formData.xs) - margin,
-        xMax: Math.max(formData.xi, formData.xs) + margin,
+        xMin: Math.min(formData.xi, formData.xs) - MARGIN,
+        xMax: Math.max(formData.xi, formData.xs) + MARGIN,
+      };
+    }
+    if (selectedMethod === "secante" && "x0" in formData && "x1" in formData) {
+      return {
+        xMin: Math.min(formData.x0, (formData as any).x1) - MARGIN,
+        xMax: Math.max(formData.x0, (formData as any).x1) + MARGIN,
       };
     }
     if ("x0" in formData) {
-      return { xMin: formData.x0 - 5, xMax: formData.x0 + 5 };
+      // Para newton y punto-fijo
+      return { xMin: formData.x0 - MARGIN, xMax: formData.x0 + MARGIN };
     }
     return { xMin: -10, xMax: 10 };
   };

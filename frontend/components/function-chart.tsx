@@ -32,8 +32,9 @@ export function FunctionChart({
     if (!funcion) return [];
 
     const points: { x: number; y: number | null }[] = [];
-    const xMin = xi === xs ? xi - 5 : xi;
-    const xMax = xi === xs ? xs + 5 : xs;
+    // Usar directamente xi y xs que vienen como parámetros
+    const xMin = xi;
+    const xMax = xs;
     const step = (xMax - xMin) / 200;
 
     if (step === 0) {
@@ -94,6 +95,18 @@ export function FunctionChart({
     return { x, y: fx };
   }, [niter, funcion]);
 
+  // Generar ticks con incremento de 0.5
+  const generateTicks = (xMin: number, xMax: number) => {
+    const ticks: number[] = [];
+    const rounded = Math.ceil(xMin * 2) / 2; // Redondear al próximo 0.5
+    for (let tick = rounded; tick <= xMax; tick += 0.5) {
+      ticks.push(parseFloat(tick.toFixed(2)));
+    }
+    return ticks;
+  };
+
+  const xTicks = generateTicks(xi, xs);
+
   if (!funcion || chartData.length === 0) {
     return (
       <div className="flex items-center justify-center h-[300px] text-muted-foreground bg-secondary/30 rounded-lg">
@@ -109,6 +122,9 @@ export function FunctionChart({
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.5} />
           <XAxis
             dataKey="x"
+            type="number"
+            domain={[xi, xs]}
+            ticks={xTicks}
             stroke="var(--muted-foreground)"
             fontSize={12}
             tickFormatter={(v) => v.toFixed(2)}
