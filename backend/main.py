@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from api.biseccion.routes import biseccion_router
 from api.newton.routes import newton_router
 from api.puntoFijo.routes import punto_fijo_router
+from api.raicesMultiples.routes import raices_multiples_router
 from api.secante.routes import secante_router
 
 app = FastAPI(
@@ -15,6 +16,7 @@ app = FastAPI(
 app.include_router(biseccion_router)
 app.include_router(newton_router)
 app.include_router(punto_fijo_router)
+app.include_router(raices_multiples_router)
 app.include_router(secante_router)
 
 app.add_middleware(
