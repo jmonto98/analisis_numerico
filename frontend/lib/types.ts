@@ -1,4 +1,4 @@
-export type NumericalMethod = "biseccion" | "newton" | "punto-fijo" | "secante";
+export type NumericalMethod = "biseccion" | "newton" | "punto-fijo" | "raices-multiples" | "secante";
 
 export type ErrorType = "relative" | "absolute";
 
@@ -48,6 +48,16 @@ export interface PuntoFijoParams {
   niter: number;
 }
 
+export interface RaicesMultiplesParams {
+  funcion: string;
+  a: number;
+  b: number;
+  tol: number;
+  subintervalos: number;
+  error_type: ErrorType;
+  niter: number;
+}
+
 export interface SecanteParams {
   funcion: string;
   x0: number;
@@ -57,7 +67,7 @@ export interface SecanteParams {
   niter: number;
 }
 
-export type MethodParams = BisectionParams | NewtonParams | PuntoFijoParams | SecanteParams;
+export type MethodParams = BisectionParams | NewtonParams | PuntoFijoParams | RaicesMultiplesParams | SecanteParams;
 
 export interface MethodConfig {
   id: NumericalMethod;
@@ -84,6 +94,12 @@ export const METHODS: MethodConfig[] = [
     name: "Punto Fijo",
     description: "Método que convierte la ecuación a una iteración g(x) = f(x) + x",
     endpoint: "/punto-fijo",
+  },
+  {
+    id: "raices-multiples",
+    name: "Raíces Múltiples",
+    description: "Método para encontrar todas las raíces en un intervalo especificado",
+    endpoint: "/raices-multiples",
   },
   {
     id: "secante",
