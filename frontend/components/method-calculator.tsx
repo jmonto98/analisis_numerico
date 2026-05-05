@@ -153,22 +153,17 @@ export function MethodCalculator({ method, defaultFormData, endpoint }: MethodCa
             <CardContent>
               <ParameterForm method={method} formData={formData} onChange={handleFormChange} />
 
-              {/* Action Buttons */}
-              <div className="flex gap-2 mt-6">
-                <Button onClick={handleCalculate} disabled={isLoading} className="flex-1">
-                  {isLoading ? (
-                    <>
-                      <Spinner className="mr-2 h-4 w-4" />
-                      Calculando...
-                    </>
-                  ) : (
-                    'Calcular'
-                  )}
-                </Button>
-                <Button onClick={handleClear} variant="outline" disabled={isLoading}>
-                  Limpiar
-                </Button>
-              </div>
+              {/* Action Button */}
+              <Button onClick={handleCalculate} disabled={isLoading} className="w-full mt-6">
+                {isLoading ? (
+                  <>
+                    <Spinner className="mr-2 h-4 w-4" />
+                    Calculando...
+                  </>
+                ) : (
+                  'Calcular'
+                )}
+              </Button>
 
               {/* Error Alert */}
               {error && (
