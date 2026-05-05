@@ -10,6 +10,7 @@ const methods = [
   { id: 'punto-fijo', label: 'Punto Fijo' },
   { id: 'raices-multiples', label: 'Raíces Múltiples' },
   { id: 'secante', label: 'Secante' },
+  { id: 'regla-falsa', label: 'Regla Falsa' },
 ];
 
 export default function EcuacionesNoLinealesLayout({

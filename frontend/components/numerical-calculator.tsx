@@ -31,6 +31,8 @@ const getDefaultFormData = (method: NumericalMethod): FormData => {
       return { ...common, x0: 1.5 };
     case "secante":
       return { ...common, x0: 1, x1: 2 };
+    case "regla-falsa":
+      return { ...common, a: 1, b: 2 };
   }
 };
 
@@ -53,6 +55,8 @@ const getEmptyFormData = (method: NumericalMethod): FormData => {
       return { ...common, x0: 0 };
     case "secante":
       return { ...common, x0: 0, x1: 0 };
+    case "regla-falsa":
+      return { ...common, a: 0, b: 0 };
   }
 };
 
@@ -89,6 +93,8 @@ export function NumericalCalculator() {
           return { ...commonData, x0: 1.5 } as FormData;
         case "secante":
           return { ...commonData, x0: 1, x1: 2 } as FormData;
+        case "regla-falsa":
+          return { ...commonData, a: 1, b: 2 } as FormData;
       }
     });
     // Limpiar solo los resultados
@@ -141,6 +147,12 @@ export function NumericalCalculator() {
         ...common,
         x0: formData.x0,
         x1: (formData as any).x1,
+      };
+    } else if (selectedMethod === "regla-falsa" && "a" in formData && "b" in formData) {
+      return {
+        ...common,
+        a: (formData as any).a,
+        b: (formData as any).b,
       };
     }
 
@@ -209,6 +221,12 @@ export function NumericalCalculator() {
       return {
         xMin: Math.min(formData.xi, formData.xs) - MARGIN,
         xMax: Math.max(formData.xi, formData.xs) + MARGIN,
+      };
+    }
+    if (selectedMethod === "regla-falsa" && "a" in formData && "b" in formData) {
+      return {
+        xMin: Math.min((formData as any).a, (formData as any).b) - MARGIN,
+        xMax: Math.max((formData as any).a, (formData as any).b) + MARGIN,
       };
     }
     if (selectedMethod === "raices-multiples" && "x0" in formData && !("x1" in formData) && !("a" in formData)) {

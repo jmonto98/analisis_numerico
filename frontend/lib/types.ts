@@ -1,4 +1,4 @@
-export type NumericalMethod = "biseccion" | "newton" | "punto-fijo" | "raices-multiples" | "secante";
+export type NumericalMethod = "biseccion" | "newton" | "punto-fijo" | "raices-multiples" | "secante" | "regla-falsa";
 
 export type ErrorType = "relative" | "absolute";
 
@@ -7,9 +7,13 @@ export interface IterationResult {
   xm?: number;
   x?: number;
   xi?: number;
+  xr?: number;
+  a?: number;
+  b?: number;
   f_xm?: number;
   f_x?: number;
   f_xi?: number;
+  f_xr?: number;
   g_xi?: number;
   df_x?: number;
   error: number | null;
@@ -65,7 +69,16 @@ export interface SecanteParams {
   niter: number;
 }
 
-export type MethodParams = BisectionParams | NewtonParams | PuntoFijoParams | RaicesMultiplesParams | SecanteParams;
+export interface ReglaFalsaParams {
+  funcion: string;
+  a: number;
+  b: number;
+  tol: number;
+  error_type: ErrorType;
+  niter: number;
+}
+
+export type MethodParams = BisectionParams | NewtonParams | PuntoFijoParams | RaicesMultiplesParams | SecanteParams | ReglaFalsaParams;
 
 export interface MethodConfig {
   id: NumericalMethod;
@@ -104,5 +117,11 @@ export const METHODS: MethodConfig[] = [
     name: "Secante",
     description: "Método que aproxima la derivada usando dos puntos iniciales",
     endpoint: "/secante",
+  },
+  {
+    id: "regla-falsa",
+    name: "Regla Falsa",
+    description: "Método que usa una recta por dos puntos del intervalo para estimar la raíz",
+    endpoint: "/regla-falsa",
   },
 ];

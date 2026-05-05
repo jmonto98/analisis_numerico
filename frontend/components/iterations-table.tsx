@@ -31,10 +31,11 @@ export function IterationsTable({ iterations }: IterationsTableProps) {
     return num.toFixed(8);
   };
 
-  // Detectar el tipo de método: Newton (df_x), Punto Fijo (xi + g_xi), Secante (xi + f_xi pero no g_xi), o Bisección (xm)
+  // Detectar el tipo de método: Newton (df_x), Punto Fijo (xi + g_xi), Secante (xi + f_xi pero no g_xi), Regla Falsa (a, xr, b), o Bisección (xm)
   const isNewton = iterations.some((it) => "df_x" in it && it.df_x !== undefined);
   const isPuntoFijo = iterations.some((it) => "xi" in it && it.xi !== undefined && "g_xi" in it);
   const isSecante = iterations.some((it) => "xi" in it && it.xi !== undefined && "f_xi" in it && !("g_xi" in it));
+  const isReglaFalsa = iterations.some((it) => "a" in it && "xr" in it && "b" in it);
 
   return (
     <div className="overflow-auto max-h-[400px] rounded-lg border border-border">
@@ -64,7 +65,23 @@ export function IterationsTable({ iterations }: IterationsTableProps) {
                 </TableHead>
               </>
             )}
-            {!isPuntoFijo && !isSecante && (
+            {isReglaFalsa && (
+              <>
+                <TableHead className="text-center font-semibold text-foreground">
+                  a
+                </TableHead>
+                <TableHead className="text-center font-semibold text-foreground">
+                  xr
+                </TableHead>
+                <TableHead className="text-center font-semibold text-foreground">
+                  b
+                </TableHead>
+                <TableHead className="text-center font-semibold text-foreground">
+                  f(xr)
+                </TableHead>
+              </>
+            )}
+            {!isPuntoFijo && !isSecante && !isReglaFalsa && (
               <>
                 <TableHead className="text-center font-semibold text-foreground">
                   {isNewton ? "x" : "xm"}
@@ -88,6 +105,8 @@ export function IterationsTable({ iterations }: IterationsTableProps) {
           {iterations.map((iteration, index) => {
             let col1: number | null | undefined;
             let col2: number | null | undefined;
+            let col3: number | null | undefined;
+            let col4: number | null | undefined;
             let dfx: number | null | undefined = null;
 
             if (isPuntoFijo) {
@@ -96,6 +115,11 @@ export function IterationsTable({ iterations }: IterationsTableProps) {
             } else if (isSecante) {
               col1 = "xi" in iteration ? iteration.xi : undefined;
               col2 = "f_xi" in iteration ? iteration.f_xi : undefined;
+            } else if (isReglaFalsa) {
+              col1 = "a" in iteration ? iteration.a : undefined;
+              col2 = "xr" in iteration ? iteration.xr : undefined;
+              col3 = "b" in iteration ? iteration.b : undefined;
+              col4 = "f_xr" in iteration ? iteration.f_xr : undefined;
             } else {
               col1 =
                 "x" in iteration ? iteration.x : "xm" in iteration ? iteration.xm : undefined;
@@ -120,6 +144,16 @@ export function IterationsTable({ iterations }: IterationsTableProps) {
                 <TableCell className="text-center font-mono text-sm">
                   {formatNumber(col2)}
                 </TableCell>
+                {isReglaFalsa && (
+                  <>
+                    <TableCell className="text-center font-mono text-sm">
+                      {formatNumber(col3)}
+                    </TableCell>
+                    <TableCell className="text-center font-mono text-sm">
+                      {formatNumber(col4)}
+                    </TableCell>
+                  </>
+                )}
                 {isNewton && (
                   <TableCell className="text-center font-mono text-sm">
                     {formatNumber(dfx)}

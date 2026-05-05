@@ -36,7 +36,7 @@ export function MethodCalculator({ method, defaultFormData, endpoint }: MethodCa
   const buildPayload = () => {
     const payload: Record<string, any> = {
       funcion: (formData as any).funcion,
-      tol: (formData as any).tol,
+      tol: parseFloat((formData as any).tol),
       error_type: (formData as any).error_type,
       niter: (formData as any).niter,
     };
@@ -56,6 +56,10 @@ export function MethodCalculator({ method, defaultFormData, endpoint }: MethodCa
         payload.x0 = (formData as any).x0;
         payload.x1 = (formData as any).x1;
         break;
+      case 'regla-falsa':
+        payload.a = (formData as any).a;
+        payload.b = (formData as any).b;
+        break;
     }
 
     return payload;
@@ -68,8 +72,9 @@ export function MethodCalculator({ method, defaultFormData, endpoint }: MethodCa
 
     switch (method) {
       case 'biseccion':
-        const xi = (formData as any).xi;
-        const xs = (formData as any).xs;
+      case 'regla-falsa':
+        const xi = (formData as any).xi ?? (formData as any).a;
+        const xs = (formData as any).xs ?? (formData as any).b;
         xMin = Math.min(xi, xs) - MARGIN;
         xMax = Math.max(xi, xs) + MARGIN;
         break;

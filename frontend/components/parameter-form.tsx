@@ -40,7 +40,12 @@ interface SecanteFormData extends CommonParams {
   x1: number;
 }
 
-export type FormData = BisectionFormData | NewtonFormData | PuntoFijoFormData | RaicesMultiplesFormData | SecanteFormData;
+interface ReglaFalsaFormData extends CommonParams {
+  a: number;
+  b: number;
+}
+
+export type FormData = BisectionFormData | NewtonFormData | PuntoFijoFormData | RaicesMultiplesFormData | SecanteFormData | ReglaFalsaFormData;
 
 interface ParameterFormProps {
   method: NumericalMethod;
@@ -178,6 +183,37 @@ export function ParameterForm({ method, formData, onChange }: ParameterFormProps
                 step="any"
                 value={(formData as SecanteFormData).x1}
                 onChange={(e) => handleChange("x1", parseFloat(e.target.value) || 0)}
+                className="bg-secondary border-border"
+              />
+            </div>
+          </>
+        )}
+
+        {method === "regla-falsa" && (
+          <>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="a" className="text-sm font-medium">
+                a (límite inferior)
+              </Label>
+              <Input
+                id="a"
+                type="number"
+                step="any"
+                value={(formData as ReglaFalsaFormData).a}
+                onChange={(e) => handleChange("a", parseFloat(e.target.value) || 0)}
+                className="bg-secondary border-border"
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="b" className="text-sm font-medium">
+                b (límite superior)
+              </Label>
+              <Input
+                id="b"
+                type="number"
+                step="any"
+                value={(formData as ReglaFalsaFormData).b}
+                onChange={(e) => handleChange("b", parseFloat(e.target.value) || 0)}
                 className="bg-secondary border-border"
               />
             </div>
