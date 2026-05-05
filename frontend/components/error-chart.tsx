@@ -125,7 +125,7 @@ export function ErrorChart({ niter }: ErrorChartProps) {
               label={{ value: "Iteración (i)", position: "insideBottomRight", offset: -10 }}
             />
             <YAxis 
-              label={{ value: getYAxisLabel(selectedError), angle: -90, position: "insideLeft" }}
+            //   label={{ value: getYAxisLabel(selectedError), angle: -90, position: "insideLeft" }}
             />
             <Tooltip 
               formatter={(value: any) => {

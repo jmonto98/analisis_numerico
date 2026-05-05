@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Spinner } from '@/components/ui/spinner';
@@ -19,6 +19,14 @@ export interface MethodCalculatorProps {
   endpoint: string;
 }
 
+interface StoredResults {
+  iterations: IterationResult[];
+  root: number;
+  message: string;
+  formData: FormData;
+  timestamp: number;
+}
+
 export function MethodCalculator({ method, defaultFormData, endpoint }: MethodCalculatorProps) {
   const [formData, setFormData] = useState<FormData>(defaultFormData);
   const [iterations, setIterations] = useState<IterationResult[]>([]);
@@ -26,6 +34,47 @@ export function MethodCalculator({ method, defaultFormData, endpoint }: MethodCa
   const [message, setMessage] = useState<string | undefined>();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Cargar resultados y parámetros guardados cuando cambia el método
+  useEffect(() => {
+    const storageKey = `results_${method}`;
+    const stored = localStorage.getItem(storageKey);
+    
+    if (stored) {
+      try {
+        const data: StoredResults = JSON.parse(stored);
+        setIterations(data.iterations);
+        setRoot(data.root);
+        setMessage(data.message);
+        setFormData(data.formData);
+      } catch (err) {
+        console.error('Error al recuperar resultados guardados:', err);
+        setFormData(defaultFormData);
+      }
+    } else {
+      // Si no hay resultados guardados, limpiar y usar parámetros predeterminados
+      setIterations([]);
+      setRoot(undefined);
+      setMessage(undefined);
+      setFormData(defaultFormData);
+    }
+    
+    setError(null);
+    setIsHydrated(true);
+  }, [method, defaultFormData]);
+
+  const saveResultsToStorage = (iters: IterationResult[], rootValue: number, msg: string) => {
+    const storageKey = `results_${method}`;
+    const data: StoredResults = {
+      iterations: iters,
+      root: rootValue,
+      message: msg,
+      formData: formData,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem(storageKey, JSON.stringify(data));
+  };
 
   const handleFormChange = useCallback(
     (updatedFormData: FormData) => {
@@ -71,24 +120,31 @@ export function MethodCalculator({ method, defaultFormData, endpoint }: MethodCa
     let xMin = 0,
       xMax = 10;
 
+    // Verificar que formData existe y tiene las propiedades necesarias
+    if (!formData || typeof formData !== 'object') {
+      return { xMin, xMax };
+    }
+
+    const fData = formData as any;
+
     switch (method) {
       case 'biseccion':
       case 'regla-falsa':
-        const xi = (formData as any).xi ?? (formData as any).a;
-        const xs = (formData as any).xs ?? (formData as any).b;
+        const xi = fData.xi ?? fData.a ?? 0;
+        const xs = fData.xs ?? fData.b ?? 10;
         xMin = Math.min(xi, xs) - MARGIN;
         xMax = Math.max(xi, xs) + MARGIN;
         break;
       case 'newton':
       case 'punto-fijo':
       case 'raices-multiples':
-        const x0 = (formData as any).x0;
+        const x0 = fData.x0 ?? 1;
         xMin = x0 - MARGIN;
         xMax = x0 + MARGIN;
         break;
       case 'secante':
-        const x0s = (formData as any).x0;
-        const x1 = (formData as any).x1;
+        const x0s = fData.x0 ?? 1;
+        const x1 = fData.x1 ?? 2;
         xMin = Math.min(x0s, x1) - MARGIN;
         xMax = Math.max(x0s, x1) + MARGIN;
         break;
@@ -117,9 +173,16 @@ export function MethodCalculator({ method, defaultFormData, endpoint }: MethodCa
       }
 
       const data = await response.json();
-      setIterations(data.iterations || []);
-      setRoot(data.root);
-      setMessage(data.message);
+      const iterationsData = data.iterations || [];
+      const rootData = data.root;
+      const messageData = data.message;
+      
+      setIterations(iterationsData);
+      setRoot(rootData);
+      setMessage(messageData);
+      
+      // Guardar en localStorage
+      saveResultsToStorage(iterationsData, rootData, messageData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
       setIterations([]);
@@ -129,15 +192,12 @@ export function MethodCalculator({ method, defaultFormData, endpoint }: MethodCa
     }
   };
 
-  const handleClear = () => {
-    setFormData(defaultFormData);
-    setIterations([]);
-    setRoot(undefined);
-    setMessage(undefined);
-    setError(null);
-  };
-
-  const { xMin, xMax } = getChartBounds();
+  const { xMin, xMax } = useMemo(() => {
+    if (!isHydrated || !formData) {
+      return { xMin: 0, xMax: 10 };
+    }
+    return getChartBounds();
+  }, [isHydrated, formData, method]);
 
   return (
     <div className="space-y-6">
@@ -151,7 +211,7 @@ export function MethodCalculator({ method, defaultFormData, endpoint }: MethodCa
               <CardTitle>Parámetros</CardTitle>
             </CardHeader>
             <CardContent>
-              <ParameterForm method={method} formData={formData} onChange={handleFormChange} />
+              <ParameterForm method={method} formData={formData || defaultFormData} onChange={handleFormChange} />
 
               {/* Action Button */}
               <Button onClick={handleCalculate} disabled={isLoading} className="w-full mt-6">
@@ -182,12 +242,14 @@ export function MethodCalculator({ method, defaultFormData, endpoint }: MethodCa
               <CardTitle>Gráfica</CardTitle>
             </CardHeader>
             <CardContent>
-              <FunctionChart
-                funcion={(formData as any).funcion}
-                niter={iterations}
-                xi={xMin}
-                xs={xMax}
-              />
+              {isHydrated && formData && (
+                <FunctionChart
+                  funcion={(formData as any).funcion}
+                  niter={iterations}
+                  xi={xMin}
+                  xs={xMax}
+                />
+              )}
             </CardContent>
           </Card>
         </div>
