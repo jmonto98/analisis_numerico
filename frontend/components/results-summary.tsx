@@ -16,23 +16,27 @@ export function ResultsSummary({ iterations, root, message }: ResultsSummaryProp
   const lastIteration = iterations[iterations.length - 1];
   
   // Obtener los valores según el método
-  const x = "xi" in lastIteration && typeof lastIteration.xi === "number"
+  const x = ("xi" in lastIteration && typeof lastIteration.xi === "number")
     ? lastIteration.xi
-    : "x" in lastIteration && typeof lastIteration.x === "number"
+    : ("x" in lastIteration && typeof lastIteration.x === "number")
     ? lastIteration.x
-    : "xm" in lastIteration && typeof lastIteration.xm === "number"
+    : ("xm" in lastIteration && typeof lastIteration.xm === "number")
     ? lastIteration.xm
-    : 0;
-  const fx = "f_x" in lastIteration && typeof lastIteration.f_x === "number"
+    : null;
+  const fx = ("f_x" in lastIteration && typeof lastIteration.f_x === "number")
     ? lastIteration.f_x
-    : "f_xm" in lastIteration && typeof lastIteration.f_xm === "number"
+    : ("f_xm" in lastIteration && typeof lastIteration.f_xm === "number")
     ? lastIteration.f_xm
-    : 0;
+    : ("f_xi" in lastIteration && typeof lastIteration.f_xi === "number")
+    ? lastIteration.f_xi
+    : null;
   const error = lastIteration.error ?? 0;
 
-  const formatExponential = (num: number) => {
-    if (Math.abs(num) < 1e-10) return "0";
-    return num.toExponential(4);
+  const formatExponential = (num: number | null) => {
+    if (num === null) return "N/A";
+    if (num === 0) return "0";
+    if (Math.abs(num) < 1e-4) return num.toExponential(4);
+    return num.toFixed(8);
   };
 
   return (
@@ -44,7 +48,7 @@ export function ResultsSummary({ iterations, root, message }: ResultsSummaryProp
             Raíz Aproximada
           </span>
           <span className="text-lg font-mono font-medium text-foreground">
-            {root !== undefined ? root.toFixed(8) : x.toFixed(8)}
+            {root ? root.toFixed(8) : (x !== null ? x.toFixed(8) : "N/A")}
           </span>
         </div>
         <div className="flex flex-col">

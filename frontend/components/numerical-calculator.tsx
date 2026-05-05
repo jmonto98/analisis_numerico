@@ -28,7 +28,7 @@ const getDefaultFormData = (method: NumericalMethod): FormData => {
     case "punto-fijo":
       return { ...common, x0: 1.5 };
     case "raices-multiples":
-      return { ...common, a: -2, b: 2, subintervalos: 20 };
+      return { ...common, x0: 1.5 };
     case "secante":
       return { ...common, x0: 1, x1: 2 };
   }
@@ -50,7 +50,7 @@ const getEmptyFormData = (method: NumericalMethod): FormData => {
     case "punto-fijo":
       return { ...common, x0: 0 };
     case "raices-multiples":
-      return { ...common, a: 0, b: 0, subintervalos: 0 };
+      return { ...common, x0: 0 };
     case "secante":
       return { ...common, x0: 0, x1: 0 };
   }
@@ -86,7 +86,7 @@ export function NumericalCalculator() {
         case "punto-fijo":
           return { ...commonData, x0: 1.5 } as FormData;
         case "raices-multiples":
-          return { ...commonData, a: -2, b: 2, subintervalos: 20 } as FormData;
+          return { ...commonData, x0: 1.5 } as FormData;
         case "secante":
           return { ...commonData, x0: 1, x1: 2 } as FormData;
       }
@@ -131,12 +131,10 @@ export function NumericalCalculator() {
         ...common,
         x0: formData.x0,
       };
-    } else if (selectedMethod === "raices-multiples" && "a" in formData) {
+    } else if (selectedMethod === "raices-multiples" && "x0" in formData && !("x1" in formData) && !("a" in formData)) {
       return {
         ...common,
-        a: (formData as any).a,
-        b: (formData as any).b,
-        subintervalos: (formData as any).subintervalos,
+        x0: (formData as any).x0,
       };
     } else if (selectedMethod === "secante" && "x0" in formData && "x1" in formData && !("a" in formData)) {
       return {
@@ -213,10 +211,10 @@ export function NumericalCalculator() {
         xMax: Math.max(formData.xi, formData.xs) + MARGIN,
       };
     }
-    if (selectedMethod === "raices-multiples" && "a" in formData) {
+    if (selectedMethod === "raices-multiples" && "x0" in formData && !("x1" in formData) && !("a" in formData)) {
       return {
-        xMin: (formData as any).a - MARGIN,
-        xMax: (formData as any).b + MARGIN,
+        xMin: (formData as any).x0 - MARGIN,
+        xMax: (formData as any).x0 + MARGIN,
       };
     }
     if (selectedMethod === "secante" && "x0" in formData && "x1" in formData) {

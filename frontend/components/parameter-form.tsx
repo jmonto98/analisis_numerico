@@ -32,9 +32,7 @@ interface PuntoFijoFormData extends CommonParams {
 }
 
 interface RaicesMultiplesFormData extends CommonParams {
-  a: number;
-  b: number;
-  subintervalos: number;
+  x0: number;
 }
 
 interface SecanteFormData extends CommonParams {
@@ -140,28 +138,15 @@ export function ParameterForm({ method, formData, onChange }: ParameterFormProps
         {method === "raices-multiples" && (
           <>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="a" className="text-sm font-medium">
-                a (límite inferior)
+              <Label htmlFor="x0" className="text-sm font-medium">
+                x0 (punto inicial)
               </Label>
               <Input
-                id="a"
+                id="x0"
                 type="number"
                 step="any"
-                value={(formData as RaicesMultiplesFormData).a}
-                onChange={(e) => handleChange("a", parseFloat(e.target.value) || 0)}
-                className="bg-secondary border-border"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="b" className="text-sm font-medium">
-                b (límite superior)
-              </Label>
-              <Input
-                id="b"
-                type="number"
-                step="any"
-                value={(formData as RaicesMultiplesFormData).b}
-                onChange={(e) => handleChange("b", parseFloat(e.target.value) || 0)}
+                value={(formData as RaicesMultiplesFormData).x0}
+                onChange={(e) => handleChange("x0", parseFloat(e.target.value) || 0)}
                 className="bg-secondary border-border"
               />
             </div>
@@ -200,7 +185,7 @@ export function ParameterForm({ method, formData, onChange }: ParameterFormProps
         )}
       </div>
 
-      <div className={`grid ${method === "raices-multiples" ? "grid-cols-2" : "grid-cols-3"} gap-4`}>
+      <div className="grid grid-cols-3 gap-4">
         <div className="flex flex-col gap-2">
           <Label htmlFor="tol" className="text-sm font-medium">
             Tolerancia
@@ -232,49 +217,18 @@ export function ParameterForm({ method, formData, onChange }: ParameterFormProps
           </Select>
         </div>
 
-        {method !== "raices-multiples" && (
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="niter" className="text-sm font-medium">
-              Máx. iteraciones
-            </Label>
-            <Input
-              id="niter"
-              type="number"
-              value={(formData as CommonParams).niter}
-              onChange={(e) => handleChange("niter", parseInt(e.target.value) || 0)}
-              className="bg-secondary border-border"
-            />
-          </div>
-        )}
-
-        {method === "raices-multiples" && (
-          <>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="niter" className="text-sm font-medium">
-                Máx. iteraciones
-              </Label>
-              <Input
-                id="niter"
-                type="number"
-                value={(formData as CommonParams).niter}
-                onChange={(e) => handleChange("niter", parseInt(e.target.value) || 0)}
-                className="bg-secondary border-border"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="subintervalos" className="text-sm font-medium">
-                Subintervalos
-              </Label>
-              <Input
-                id="subintervalos"
-                type="number"
-                value={(formData as RaicesMultiplesFormData).subintervalos}
-                onChange={(e) => handleChange("subintervalos", parseInt(e.target.value) || 20)}
-                className="bg-secondary border-border"
-              />
-            </div>
-          </>
-        )}
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="niter" className="text-sm font-medium">
+            Máx. iteraciones
+          </Label>
+          <Input
+            id="niter"
+            type="number"
+            value={(formData as CommonParams).niter}
+            onChange={(e) => handleChange("niter", parseInt(e.target.value) || 0)}
+            className="bg-secondary border-border"
+          />
+        </div>
       </div>
     </div>
   );

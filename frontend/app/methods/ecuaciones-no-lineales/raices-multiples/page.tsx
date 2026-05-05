@@ -2,7 +2,7 @@ import { MethodCalculator } from '@/components/method-calculator';
 
 export const metadata = {
   title: 'Método de Raíces Múltiples',
-  description: 'Encontrar múltiples raíces en un intervalo',
+  description: 'Encontrar raíces múltiples usando método de Newton',
 };
 
 export default function RaicesMultiplesPage() {
@@ -12,9 +12,7 @@ export default function RaicesMultiplesPage() {
       endpoint="raices-multiples/"
       defaultFormData={{
         funcion: 'x**3 - x - 2',
-        a: -2,
-        b: 2,
-        subintervalos: 20,
+        x0: 1.5,
         tol: '1e-6',
         error_type: 'relative',
         niter: 100,

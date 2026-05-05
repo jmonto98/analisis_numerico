@@ -49,16 +49,12 @@ export function MethodCalculator({ method, defaultFormData, endpoint }: MethodCa
         break;
       case 'newton':
       case 'punto-fijo':
+      case 'raices-multiples':
         payload.x0 = (formData as any).x0;
         break;
       case 'secante':
         payload.x0 = (formData as any).x0;
         payload.x1 = (formData as any).x1;
-        break;
-      case 'raices-multiples':
-        payload.a = (formData as any).a;
-        payload.b = (formData as any).b;
-        payload.subintervalos = (formData as any).subintervalos;
         break;
     }
 
@@ -79,6 +75,7 @@ export function MethodCalculator({ method, defaultFormData, endpoint }: MethodCa
         break;
       case 'newton':
       case 'punto-fijo':
+      case 'raices-multiples':
         const x0 = (formData as any).x0;
         xMin = x0 - MARGIN;
         xMax = x0 + MARGIN;
@@ -88,12 +85,6 @@ export function MethodCalculator({ method, defaultFormData, endpoint }: MethodCa
         const x1 = (formData as any).x1;
         xMin = Math.min(x0s, x1) - MARGIN;
         xMax = Math.max(x0s, x1) + MARGIN;
-        break;
-      case 'raices-multiples':
-        const a = (formData as any).a;
-        const b = (formData as any).b;
-        xMin = a - MARGIN;
-        xMax = b + MARGIN;
         break;
     }
 

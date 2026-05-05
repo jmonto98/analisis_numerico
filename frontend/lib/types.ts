@@ -50,10 +50,8 @@ export interface PuntoFijoParams {
 
 export interface RaicesMultiplesParams {
   funcion: string;
-  a: number;
-  b: number;
+  x0: number;
   tol: number;
-  subintervalos: number;
   error_type: ErrorType;
   niter: number;
 }
