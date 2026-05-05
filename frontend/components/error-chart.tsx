@@ -12,22 +12,24 @@ import {
   Legend,
 } from "recharts";
 import type { IterationResult } from "@/lib/types";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface ErrorChartProps {
   niter: IterationResult[];
 }
 
-type ErrorType = "absolute" | "relative1" | "relative2" | "conditional";
+type ErrorType = "absolute" | "error" | "relative1" | "relative2" | "conditional";
+
+const ERROR_TYPES: { value: ErrorType; label: string; yLabel: string }[] = [
+  { value: "absolute", label: "Absoluto", yLabel: "Absoluto: |Xⱼ₊₁ - Xⱼ|" },
+  { value: "conditional", label: "Condicional", yLabel: "Condicional: |f(Xᵢ)|" },
+  { value: "error", label: "Relativo", yLabel: "Relativo: |Xⱼ₊₁ - Xⱼ| / |Xⱼ|" },
+  { value: "relative1", label: "Relativo 1", yLabel: "Relativo 1: |Xⱼ₊₁ - Xⱼ| / |Xⱼ|" },
+  { value: "relative2", label: "Relativo 2", yLabel: "Relativo 2: |Xⱼ₊₁ - Xⱼ| / |Xⱼ₊₁|" },
+];
 
 export function ErrorChart({ niter }: ErrorChartProps) {
-  const [selectedError, setSelectedError] = useState<ErrorType>("absolute");
+  const [selectedErrors, setSelectedErrors] = useState<ErrorType[]>(["absolute", "error"]);
 
   const chartData = useMemo(() => {
     if (!niter || niter.length === 0) return [];
@@ -43,6 +45,9 @@ export function ErrorChart({ niter }: ErrorChartProps) {
         if (it.error_absolute !== null && it.error_absolute !== undefined) {
           dataPoint.absolute = it.error_absolute;
         }
+        if (it.error !== null && it.error !== undefined) {
+          dataPoint.error = it.error;
+        }
         if (it.error_relative1 !== null && it.error_relative1 !== undefined) {
           dataPoint.relative1 = it.error_relative1;
         }
@@ -57,37 +62,15 @@ export function ErrorChart({ niter }: ErrorChartProps) {
       });
   }, [niter]);
 
-  const getYAxisLabel = (errorType: ErrorType): string => {
-    switch (errorType) {
-      case "absolute":
-        return "Error Absoluto: |Xⱼ₊₁ - Xⱼ|";
-      case "relative1":
-        return "Error Relativo 1: |Xⱼ₊₁ - Xⱼ| / |Xⱼ|";
-      case "relative2":
-        return "Error Relativo 2: |Xⱼ₊₁ - Xⱼ| / |Xⱼ₊₁|";
-      case "conditional":
-        return "Error Condicional: |f(Xᵢ)|";
-      default:
-        return "Error";
-    }
+  const handleErrorToggle = (errorType: ErrorType, checked: boolean) => {
+    setSelectedErrors(prev =>
+      checked
+        ? [...prev, errorType]
+        : prev.filter(e => e !== errorType)
+    );
   };
 
-  const getDataKey = (errorType: ErrorType): string => {
-    switch (errorType) {
-      case "absolute":
-        return "absolute";
-      case "relative1":
-        return "relative1";
-      case "relative2":
-        return "relative2";
-      case "conditional":
-        return "conditional";
-      default:
-        return "absolute";
-    }
-  };
-
-  const hasData = chartData.length > 0 && chartData.some((d) => d[getDataKey(selectedError)] !== undefined);
+  const hasData = chartData.length > 0;
 
   if (!hasData) {
     return (
@@ -97,37 +80,41 @@ export function ErrorChart({ niter }: ErrorChartProps) {
     );
   }
 
+  const colors = ["#3b82f6", "#ef4444", "#10b981", "#f59e0b"];
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <label htmlFor="error-select" className="text-sm font-medium">
-          Tipo de Error:
-        </label>
-        <Select value={selectedError} onValueChange={(value) => setSelectedError(value as ErrorType)}>
-          <SelectTrigger id="error-select" className="w-64">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="absolute">Absoluto</SelectItem>
-            <SelectItem value="relative1">Relativo 1</SelectItem>
-            <SelectItem value="relative2">Relativo 2</SelectItem>
-            <SelectItem value="conditional">Condicional</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="flex flex-wrap gap-4">
+        <span className="text-sm font-medium self-center">Tipo de Error:</span>
+        {ERROR_TYPES.map((errorType, index) => (
+          <div key={errorType.value} className="flex items-center space-x-2">
+            <Checkbox
+              id={`error-${errorType.value}`}
+              checked={selectedErrors.includes(errorType.value)}
+              onCheckedChange={(checked) =>
+                handleErrorToggle(errorType.value, checked as boolean)
+              }
+            />
+            <label
+              htmlFor={`error-${errorType.value}`}
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              {errorType.label}
+            </label>
+          </div>
+        ))}
       </div>
 
       <div className="w-full h-80 rounded-lg border border-border bg-card p-4">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis 
-              dataKey="i" 
+            <XAxis
+              dataKey="i"
               label={{ value: "Iteración (i)", position: "insideBottomRight", offset: -10 }}
             />
-            <YAxis 
-            //   label={{ value: getYAxisLabel(selectedError), angle: -90, position: "insideLeft" }}
-            />
-            <Tooltip 
+            <YAxis />
+            <Tooltip
               formatter={(value: any) => {
                 if (typeof value === 'number') {
                   if (Math.abs(value) < 0.0001 || Math.abs(value) > 10000) {
@@ -140,15 +127,23 @@ export function ErrorChart({ niter }: ErrorChartProps) {
               labelStyle={{ color: '#000' }}
             />
             <Legend />
-            <Line
-              type="monotone"
-              dataKey={getDataKey(selectedError)}
-              stroke="#3b82f6"
-              dot={{ fill: '#3b82f6', r: 4 }}
-              isAnimationActive={false}
-              name={getYAxisLabel(selectedError)}
-              strokeWidth={2}
-            />
+            {ERROR_TYPES.map((errorInfo, index) => {
+              if (!selectedErrors.includes(errorInfo.value)) return null;
+              const hasErrorData = chartData.some(d => d[errorInfo.value] !== undefined);
+              if (!hasErrorData) return null;
+              return (
+                <Line
+                  key={errorInfo.value}
+                  type="monotone"
+                  dataKey={errorInfo.value}
+                  stroke={colors[index % colors.length]}
+                  dot={{ fill: colors[index % colors.length], r: 4 }}
+                  isAnimationActive={false}
+                  name={errorInfo.yLabel}
+                  strokeWidth={2}
+                />
+              );
+            })}
           </LineChart>
         </ResponsiveContainer>
       </div>

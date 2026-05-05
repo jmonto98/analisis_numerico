@@ -19,6 +19,7 @@ export interface IterationResult {
   error: number | null;
   // Error types for visualization
   error_absolute?: number | null;
+  error_relative?: number | null;
   error_relative1?: number | null;
   error_relative2?: number | null;
   error_conditional?: number | null;
