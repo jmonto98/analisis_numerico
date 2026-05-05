@@ -140,72 +140,84 @@ export function MethodCalculator({ method, defaultFormData, endpoint }: MethodCa
   const { xMin, xMax } = getChartBounds();
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Left Column: Form and Results */}
-      <div className="space-y-6">
-        {/* Form Card */}
-        <Card className="border-2">
-          <CardHeader>
-            <CardTitle>Parámetros</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ParameterForm method={method} formData={formData} onChange={handleFormChange} />
+    <div className="space-y-6">
+      {/* Row 1: Parámetros | Gráfica */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left: Form */}
+        <div className="space-y-6">
+          {/* Form Card */}
+          <Card className="border-2">
+            <CardHeader>
+              <CardTitle>Parámetros</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ParameterForm method={method} formData={formData} onChange={handleFormChange} />
 
-            {/* Action Buttons */}
-            <div className="flex gap-2 mt-6">
-              <Button onClick={handleCalculate} disabled={isLoading} className="flex-1">
-                {isLoading ? (
-                  <>
-                    <Spinner className="mr-2 h-4 w-4" />
-                    Calculando...
-                  </>
-                ) : (
-                  'Calcular'
-                )}
-              </Button>
-              <Button onClick={handleClear} variant="outline" disabled={isLoading}>
-                Limpiar
-              </Button>
-            </div>
+              {/* Action Buttons */}
+              <div className="flex gap-2 mt-6">
+                <Button onClick={handleCalculate} disabled={isLoading} className="flex-1">
+                  {isLoading ? (
+                    <>
+                      <Spinner className="mr-2 h-4 w-4" />
+                      Calculando...
+                    </>
+                  ) : (
+                    'Calcular'
+                  )}
+                </Button>
+                <Button onClick={handleClear} variant="outline" disabled={isLoading}>
+                  Limpiar
+                </Button>
+              </div>
 
-            {/* Error Alert */}
-            {error && (
-              <Alert variant="destructive" className="mt-4">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-          </CardContent>
-        </Card>
+              {/* Error Alert */}
+              {error && (
+                <Alert variant="destructive" className="mt-4">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
+        </div>
 
-        {/* Results Summary */}
-        {root !== undefined && (
-          <ResultsSummary
-            root={root}
-            iterations={iterations}
-            message={message}
-          />
-        )}
+        {/* Right: Chart */}
+        <div>
+          <Card className="border-2">
+            <CardHeader>
+              <CardTitle>Gráfica</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <FunctionChart
+                funcion={(formData as any).funcion}
+                niter={iterations}
+                xi={xMin}
+                xs={xMax}
+              />
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
-      {/* Right Column: Chart and Table */}
-      <div className="space-y-6">
-        {/* Chart Card */}
+      {/* Row 2: Resultados (full width) */}
+      {root !== undefined && (
         <Card className="border-2">
           <CardHeader>
-            <CardTitle>Gráfica</CardTitle>
+            <CardTitle>Resultados</CardTitle>
           </CardHeader>
           <CardContent>
-            <FunctionChart
-              funcion={(formData as any).funcion}
-              niter={iterations}
-              xi={xMin}
-              xs={xMax}
+            <ResultsSummary
+              root={root}
+              iterations={iterations}
+              message={message}
             />
           </CardContent>
         </Card>
+      )}
 
-        {/* Error Chart */}
-        {iterations.length > 0 && (
+      {/* Row 3: Errores | Iteraciones */}
+      {iterations.length > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left: Error Chart */}
           <Card className="border-2">
             <CardHeader>
               <CardTitle>Análisis de Errores</CardTitle>
@@ -214,10 +226,8 @@ export function MethodCalculator({ method, defaultFormData, endpoint }: MethodCa
               <ErrorChart niter={iterations} />
             </CardContent>
           </Card>
-        )}
 
-        {/* Iterations Table */}
-        {iterations.length > 0 && (
+          {/* Right: Iterations Table */}
           <Card className="border-2">
             <CardHeader>
               <CardTitle>Iteraciones</CardTitle>
@@ -226,8 +236,8 @@ export function MethodCalculator({ method, defaultFormData, endpoint }: MethodCa
               <IterationsTable iterations={iterations} />
             </CardContent>
           </Card>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

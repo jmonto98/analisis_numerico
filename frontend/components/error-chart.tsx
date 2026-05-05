@@ -60,13 +60,13 @@ export function ErrorChart({ niter }: ErrorChartProps) {
   const getYAxisLabel = (errorType: ErrorType): string => {
     switch (errorType) {
       case "absolute":
-        return "Error Absoluto: |X_{j+1} - X_j|";
+        return "Error Absoluto: |Xⱼ₊₁ - Xⱼ|";
       case "relative1":
-        return "Error Relativo 1: |X_{j+1} - X_j| / |X_j|";
+        return "Error Relativo 1: |Xⱼ₊₁ - Xⱼ| / |Xⱼ|";
       case "relative2":
-        return "Error Relativo 2: |X_{j+1} - X_j| / |X_{j+1}|";
+        return "Error Relativo 2: |Xⱼ₊₁ - Xⱼ| / |Xⱼ₊₁|";
       case "conditional":
-        return "Error Condicional: |f(X_i)|";
+        return "Error Condicional: |f(Xᵢ)|";
       default:
         return "Error";
     }
@@ -108,18 +108,10 @@ export function ErrorChart({ niter }: ErrorChartProps) {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="absolute">
-              Absoluto: |X_{"{j+1}"} - X_j|
-            </SelectItem>
-            <SelectItem value="relative1">
-              Relativo 1: |X_{"{j+1}"} - X_j| / |X_j|
-            </SelectItem>
-            <SelectItem value="relative2">
-              Relativo 2: |X_{"{j+1}"} - X_j| / |X_{"{j+1}"}|
-            </SelectItem>
-            <SelectItem value="conditional">
-              Condicional: |f(X_i)|
-            </SelectItem>
+            <SelectItem value="absolute">Absoluto</SelectItem>
+            <SelectItem value="relative1">Relativo 1</SelectItem>
+            <SelectItem value="relative2">Relativo 2</SelectItem>
+            <SelectItem value="conditional">Condicional</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -133,7 +125,6 @@ export function ErrorChart({ niter }: ErrorChartProps) {
               label={{ value: "Iteración (i)", position: "insideBottomRight", offset: -10 }}
             />
             <YAxis 
-              scale="log"
               label={{ value: getYAxisLabel(selectedError), angle: -90, position: "insideLeft" }}
             />
             <Tooltip 
@@ -153,7 +144,7 @@ export function ErrorChart({ niter }: ErrorChartProps) {
               type="monotone"
               dataKey={getDataKey(selectedError)}
               stroke="#3b82f6"
-              dot={false}
+              dot={{ fill: '#3b82f6', r: 4 }}
               isAnimationActive={false}
               name={getYAxisLabel(selectedError)}
               strokeWidth={2}
