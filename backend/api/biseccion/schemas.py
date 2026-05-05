@@ -19,6 +19,10 @@ class BiseccionIteration(BaseModel):
     xm: float
     f_xm: float
     error: Optional[float] = None
+    error_absolute: Optional[float] = None
+    error_relative1: Optional[float] = None
+    error_relative2: Optional[float] = None
+    error_conditional: Optional[float] = None
 
 
 class BiseccionResponse(BaseModel):

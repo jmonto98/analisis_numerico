@@ -36,6 +36,31 @@ def _compute_error(xr_new: float, xr_old: float, error_type: str) -> float:
     raise ValueError("El tipo de error debe ser 'absolute' o 'relative'.")
 
 
+def _compute_all_errors(current: float, previous: float, f_current: float) -> dict:
+    """Calcula todos los tipos de error para visualización"""
+    errors = {}
+    
+    # Error absoluto: |X_{j+1} - X_j|
+    errors["error_absolute"] = abs(current - previous)
+    
+    # Error relativo 1: |X_{j+1} - X_j| / |X_j|
+    if previous != 0:
+        errors["error_relative1"] = abs(current - previous) / abs(previous)
+    else:
+        errors["error_relative1"] = abs(current - previous)
+    
+    # Error relativo 2: |X_{j+1} - X_j| / |X_{j+1}|
+    if current != 0:
+        errors["error_relative2"] = abs(current - previous) / abs(current)
+    else:
+        errors["error_relative2"] = abs(current - previous)
+    
+    # Error condicional: |f(X_i)|
+    errors["error_conditional"] = abs(f_current)
+    
+    return errors
+
+
 def parse_function(expression: str) -> Callable[[float], float]:
     expression = _normalize_expression(expression)
     x = Symbol("x")
@@ -108,7 +133,18 @@ def regla_falsa(request: ReglaFalsaRequest) -> dict:
     except Exception as exc:
         raise ValueError(f"Error al evaluar la función en xr: {exc}") from exc
 
-    iterations.append({"i": 0, "a": a, "xr": xr, "b": b, "f_xr": f_xr, "error": None})
+    iterations.append({
+        "i": 0, 
+        "a": a, 
+        "xr": xr, 
+        "b": b, 
+        "f_xr": f_xr, 
+        "error": None,
+        "error_absolute": None,
+        "error_relative1": None,
+        "error_relative2": None,
+        "error_conditional": abs(f_xr),
+    })
 
     if f_xr == 0:
         result.update(root=xr, message=f"{xr} es raíz de f(x)", success=True)
@@ -141,8 +177,20 @@ def regla_falsa(request: ReglaFalsaRequest) -> dict:
             raise ValueError(f"Error al evaluar la función en iteración {i}: {exc}") from exc
 
         error = _compute_error(xr, xr_old, request.error_type)
+        all_errors = _compute_all_errors(xr, xr_old, f_xr)
 
-        iterations.append({"i": i, "a": a, "xr": xr, "b": b, "f_xr": f_xr, "error": error})
+        iterations.append({
+            "i": i, 
+            "a": a, 
+            "xr": xr, 
+            "b": b, 
+            "f_xr": f_xr, 
+            "error": error,
+            "error_absolute": all_errors["error_absolute"],
+            "error_relative1": all_errors["error_relative1"],
+            "error_relative2": all_errors["error_relative2"],
+            "error_conditional": all_errors["error_conditional"],
+        })
 
         if f_xr == 0 or error < request.tol:
             result.update(

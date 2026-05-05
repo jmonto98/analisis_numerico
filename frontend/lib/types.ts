@@ -17,6 +17,11 @@ export interface IterationResult {
   g_xi?: number;
   df_x?: number;
   error: number | null;
+  // Error types for visualization
+  error_absolute?: number | null;
+  error_relative1?: number | null;
+  error_relative2?: number | null;
+  error_conditional?: number | null;
 }
 
 export interface MethodResponse {

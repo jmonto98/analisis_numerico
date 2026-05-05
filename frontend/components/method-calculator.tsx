@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ParameterForm, type FormData } from '@/components/parameter-form';
 import { IterationsTable } from '@/components/iterations-table';
 import { FunctionChart } from '@/components/function-chart';
+import { ErrorChart } from '@/components/error-chart';
 import { ResultsSummary } from '@/components/results-summary';
 import { API_BASE_URL } from '@/lib/api-config';
 import { NumericalMethod, IterationResult } from '@/lib/types';
@@ -202,6 +203,18 @@ export function MethodCalculator({ method, defaultFormData, endpoint }: MethodCa
             />
           </CardContent>
         </Card>
+
+        {/* Error Chart */}
+        {iterations.length > 0 && (
+          <Card className="border-2">
+            <CardHeader>
+              <CardTitle>Análisis de Errores</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ErrorChart niter={iterations} />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Iterations Table */}
         {iterations.length > 0 && (

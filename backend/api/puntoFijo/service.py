@@ -36,6 +36,31 @@ def _compute_error(xi_nuevo: float, xi: float, error_type: str) -> float:
     raise ValueError("El tipo de error debe ser 'absolute' o 'relative'.")
 
 
+def _compute_all_errors(current: float, previous: float, f_current: float) -> dict:
+    """Calcula todos los tipos de error para visualización"""
+    errors = {}
+    
+    # Error absoluto: |X_{j+1} - X_j|
+    errors["error_absolute"] = abs(current - previous)
+    
+    # Error relativo 1: |X_{j+1} - X_j| / |X_j|
+    if previous != 0:
+        errors["error_relative1"] = abs(current - previous) / abs(previous)
+    else:
+        errors["error_relative1"] = abs(current - previous)
+    
+    # Error relativo 2: |X_{j+1} - X_j| / |X_{j+1}|
+    if current != 0:
+        errors["error_relative2"] = abs(current - previous) / abs(current)
+    else:
+        errors["error_relative2"] = abs(current - previous)
+    
+    # Error condicional: |f(X_i)|
+    errors["error_conditional"] = abs(f_current)
+    
+    return errors
+
+
 def parse_function(expression: str) -> Callable[[float], float]:
     expression = _normalize_expression(expression)
     x = Symbol("x")
@@ -90,11 +115,20 @@ def punto_fijo(request: PuntoFijoRequest) -> dict:
 
     # Iteración 0
     xi = request.x0
+    try:
+        f_x0 = _validate_real_value(f(xi))
+    except:
+        f_x0 = 0
+    
     iterations.append({
         "i": 0,
         "xi": xi,
         "g_xi": g_x0,
-        "error": None
+        "error": None,
+        "error_absolute": None,
+        "error_relative1": None,
+        "error_relative2": None,
+        "error_conditional": abs(f_x0),
     })
 
     # Iteraciones
@@ -110,12 +144,21 @@ def punto_fijo(request: PuntoFijoRequest) -> dict:
             return result
         
         error = _compute_error(xi_nuevo, xi, request.error_type)
+        try:
+            f_xi_nuevo = _validate_real_value(f(xi_nuevo))
+        except:
+            f_xi_nuevo = 0
+        all_errors = _compute_all_errors(xi_nuevo, xi, f_xi_nuevo)
         
         iterations.append({
             "i": i,
             "xi": xi_nuevo,
             "g_xi": xi_nuevo,
-            "error": error
+            "error": error,
+            "error_absolute": all_errors["error_absolute"],
+            "error_relative1": all_errors["error_relative1"],
+            "error_relative2": all_errors["error_relative2"],
+            "error_conditional": all_errors["error_conditional"],
         })
 
         xi = xi_nuevo

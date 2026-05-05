@@ -19,6 +19,10 @@ class NewtonIteration(BaseModel):
     f_x: float
     df_x: float
     error: Optional[float] = None
+    error_absolute: Optional[float] = None
+    error_relative1: Optional[float] = None
+    error_relative2: Optional[float] = None
+    error_conditional: Optional[float] = None
 
 
 class NewtonResponse(BaseModel):

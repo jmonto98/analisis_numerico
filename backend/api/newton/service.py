@@ -38,6 +38,31 @@ def _compute_error(xn: float, x0: float, error_type: str) -> float:
     raise ValueError("El tipo de error debe ser 'absolute' o 'relative'.")
 
 
+def _compute_all_errors(current: float, previous: float, f_current: float) -> dict:
+    """Calcula todos los tipos de error para visualización"""
+    errors = {}
+    
+    # Error absoluto: |X_{j+1} - X_j|
+    errors["error_absolute"] = abs(current - previous)
+    
+    # Error relativo 1: |X_{j+1} - X_j| / |X_j|
+    if previous != 0:
+        errors["error_relative1"] = abs(current - previous) / abs(previous)
+    else:
+        errors["error_relative1"] = abs(current - previous)
+    
+    # Error relativo 2: |X_{j+1} - X_j| / |X_{j+1}|
+    if current != 0:
+        errors["error_relative2"] = abs(current - previous) / abs(current)
+    else:
+        errors["error_relative2"] = abs(current - previous)
+    
+    # Error condicional: |f(X_i)|
+    errors["error_conditional"] = abs(f_current)
+    
+    return errors
+
+
 def parse_function(expression: str) -> tuple[Callable[[float], float], Callable[[float], float]]:
     expression = _normalize_expression(expression)
     x = Symbol("x")
@@ -94,7 +119,17 @@ def newton(newton_request: NewtonRequest) -> dict:
     }
 
     # Primera iteración
-    iterations.append({"i": 0, "x": newton_request.x0, "f_x": fe, "df_x": dfe, "error": None})
+    iterations.append({
+        "i": 0, 
+        "x": newton_request.x0, 
+        "f_x": fe, 
+        "df_x": dfe, 
+        "error": None,
+        "error_absolute": None,
+        "error_relative1": None,
+        "error_relative2": None,
+        "error_conditional": abs(fe),
+    })
 
     if fe == 0:
         result.update(root=newton_request.x0, message=f"{newton_request.x0} es raíz de f(x)", success=True)
@@ -123,7 +158,18 @@ def newton(newton_request: NewtonRequest) -> dict:
             raise ValueError(f"Error al evaluar la función en iteración {i}: {exc}") from exc
 
         error = _compute_error(xn, x0, newton_request.error_type)
-        iterations.append({"i": i, "x": xn, "f_x": fe, "df_x": dfe, "error": error})
+        all_errors = _compute_all_errors(xn, x0, fe)
+        iterations.append({
+            "i": i, 
+            "x": xn, 
+            "f_x": fe, 
+            "df_x": dfe, 
+            "error": error,
+            "error_absolute": all_errors["error_absolute"],
+            "error_relative1": all_errors["error_relative1"],
+            "error_relative2": all_errors["error_relative2"],
+            "error_conditional": all_errors["error_conditional"],
+        })
 
         if fe == 0 or error < newton_request.tol:
             result.update(

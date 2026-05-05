@@ -17,6 +17,10 @@ class ReglaFalsaIteration(BaseModel):
     b: float
     f_xr: float
     error: float | None
+    error_absolute: float | None = None
+    error_relative1: float | None = None
+    error_relative2: float | None = None
+    error_conditional: float | None = None
 
 
 class ReglaFalsaResponse(BaseModel):

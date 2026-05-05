@@ -19,6 +19,10 @@ class SecanteIteration(BaseModel):
     xi: float
     f_xi: float
     error: Optional[float] = None
+    error_absolute: Optional[float] = None
+    error_relative1: Optional[float] = None
+    error_relative2: Optional[float] = None
+    error_conditional: Optional[float] = None
 
 
 class SecanteResponse(BaseModel):
