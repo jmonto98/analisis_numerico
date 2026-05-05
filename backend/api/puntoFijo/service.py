@@ -99,8 +99,16 @@ def punto_fijo(request: PuntoFijoRequest) -> dict:
 
     # Iteraciones
     for i in range(1, request.niter + 1):
-        xi_nuevo = g(xi)
-        xi_nuevo = _validate_real_value(xi_nuevo)
+        try:
+            xi_nuevo = g(xi)
+            xi_nuevo = _validate_real_value(xi_nuevo)
+        except (OverflowError, ValueError) as exc:
+            result.update(
+                message=f"Divergencia detectada en iteración {i}: {str(exc)}. La función de iteración g(x) no cumple con la condición de convergencia |g'(x)| < 1.",
+                success=False
+            )
+            return result
+        
         error = _compute_error(xi_nuevo, xi, request.error_type)
         
         iterations.append({
@@ -120,5 +128,5 @@ def punto_fijo(request: PuntoFijoRequest) -> dict:
             )
             return result
 
-    result.update(message=f"No convergió en {request.niter} iteraciones")
+    result.update(message=f"No convergió en {request.niter} iteraciones. Verifique que g(x) = f(x) + x cumpla |g'(x)| < 1 cerca de la raíz.")
     return result

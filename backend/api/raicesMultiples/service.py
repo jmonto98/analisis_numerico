@@ -1,9 +1,9 @@
 from __future__ import annotations
 import math
-from typing import Callable, List
-from sympy import Symbol, lambdify, sympify, SympifyError
+from typing import Callable
+from sympy import Symbol, lambdify, sympify, SympifyError, diff
 
-from .schemas import RaicesMultiplesRequest
+from .schemas import RaicesMultiplesRequest, RaicesMultiplesIteration, RaicesMultiplesResponse
 
 
 def _normalize_expression(expression: str) -> str:
@@ -11,6 +11,7 @@ def _normalize_expression(expression: str) -> str:
 
 
 def _validate_real_value(value) -> float:
+    """Valida que el valor sea un número real válido"""
     if isinstance(value, complex):
         if abs(value.imag) < 1e-15:
             value = value.real
@@ -28,15 +29,17 @@ def _validate_real_value(value) -> float:
     return result
 
 
-def _compute_error(xm: float, xa: float, error_type: str) -> float:
+def _compute_error(xn: float, xn_prev: float, error_type: str) -> float:
+    """Calcula el error según el tipo especificado"""
     if error_type == "absolute":
-        return abs(xm - xa)
+        return abs(xn - xn_prev)
     if error_type == "relative":
-        return abs(xm - xa) / abs(xm) if xm != 0 else abs(xm - xa)
+        return abs(xn - xn_prev) / abs(xn) if xn != 0 else abs(xn - xn_prev)
     raise ValueError("El tipo de error debe ser 'absolute' o 'relative'.")
 
 
 def parse_function(expression: str) -> Callable[[float], float]:
+    """Convierte una expresión en string a una función evaluable"""
     expression = _normalize_expression(expression)
     x = Symbol("x")
 
@@ -58,94 +61,127 @@ def parse_function(expression: str) -> Callable[[float], float]:
     return f
 
 
-def _biseccion_refinar(
-    f: Callable[[float], float],
-    xi: float,
-    xs: float,
-    tol: float,
-    max_iter: int,
-    error_type: str,
-) -> tuple[float, int]:
-    """Usa bisección para refinar una raíz en el intervalo [xi, xs]"""
-    for i in range(1, max_iter + 1):
-        xm = (xi + xs) / 2.0
-        fm = _validate_real_value(f(xm))
-        fi = _validate_real_value(f(xi))
-        
-        error = _compute_error(xm, xi, error_type)
-        
-        if error < tol:
-            return xm, i
-        
-        if fi * fm < 0:
-            xs = xm
-        else:
-            xi = xm
-    
-    xm = (xi + xs) / 2.0
-    return xm, max_iter
+def parse_derivatives(expression: str) -> tuple[Callable, Callable, Callable]:
+    """
+    Calcula automáticamente las derivadas de la función
+    Retorna (f, f', f'')
+    """
+    expression = _normalize_expression(expression)
+    x = Symbol("x")
+
+    try:
+        parsed = sympify(expression, locals={"x": x})
+    except SympifyError as exc:
+        raise ValueError(f"Función inválida: {exc}") from exc
+
+    # Calcular derivadas
+    first_deriv = diff(parsed, x)
+    second_deriv = diff(first_deriv, x)
+
+    try:
+        f = lambdify(x, parsed, modules=["math"])
+        f_prime = lambdify(x, first_deriv, modules=["math"])
+        f_double_prime = lambdify(x, second_deriv, modules=["math"])
+    except Exception as exc:
+        raise ValueError(f"No se pudo construir las funciones derivadas: {exc}") from exc
+
+    return f, f_prime, f_double_prime
 
 
-def raices_multiples(request: RaicesMultiplesRequest) -> dict:
+def raices_multiples(request: RaicesMultiplesRequest) -> RaicesMultiplesResponse:
+    """
+    Método de Newton para raíces múltiples
     
-    if request.a >= request.b:
-        raise ValueError("El límite inferior (a) debe ser menor que el superior (b).")
+    Fórmula: x_{n+1} = x_n - (f(x_n) * f'(x_n)) / (f'(x_n)^2 - f(x_n) * f''(x_n))
+    """
+    
+    # Validaciones
     if request.tol <= 0:
         raise ValueError("La tolerancia debe ser mayor que cero.")
     if request.niter <= 0:
         raise ValueError("El número de iteraciones debe ser mayor que cero.")
-    if request.subintervalos <= 0:
-        raise ValueError("El número de subintervalos debe ser mayor que cero.")
     if request.error_type not in {"absolute", "relative"}:
         raise ValueError("El tipo de error debe ser 'absolute' o 'relative'.")
 
-    f = parse_function(request.funcion)
+    # Obtener funciones
+    try:
+        f, f_prime, f_double_prime = parse_derivatives(request.funcion)
+    except Exception as exc:
+        raise ValueError(f"Error al procesar la función: {exc}") from exc
 
-    result = {
-        "raices": [],
-        "total_raices": 0,
-        "message": "",
-        "success": False,
-        "error_type": request.error_type,
-    }
+    iterations: list[RaicesMultiplesIteration] = []
+    x0 = request.x0
 
-    # Dividir el intervalo en subintervalos
-    h = (request.b - request.a) / request.subintervalos
-    raices_encontradas: List[dict] = []
+    # Validar que x0 esté en el dominio
+    try:
+        fx = _validate_real_value(f(x0))
+        fx_prime = _validate_real_value(f_prime(x0))
+        fx_double_prime = _validate_real_value(f_double_prime(x0))
+    except ValueError as exc:
+        raise ValueError(f"x0 no está en el dominio de la función o sus derivadas: {exc}") from exc
+
+    # Primera iteración
+    iterations.append(RaicesMultiplesIteration(
+        i=0,
+        x=x0,
+        f_x=fx,
+        error=None
+    ))
+
+    d = fx_prime ** 2 - fx * fx_double_prime
+    err = request.tol + 1
+    cont = 0
 
     try:
-        for i in range(request.subintervalos):
-            x_left = request.a + i * h
-            x_right = request.a + (i + 1) * h
+        while err > request.tol and d != 0 and cont < request.niter:
+            # Fórmula de Newton para raíces múltiples
+            denominator = (fx_prime ** 2) - (fx * fx_double_prime)
+            
+            if abs(denominator) < 1e-15:
+                raise ValueError("El denominador es muy pequeño (posible división por cero)")
+            
+            xn = x0 - (fx * fx_prime) / denominator
 
-            f_left = _validate_real_value(f(x_left))
-            f_right = _validate_real_value(f(x_right))
+            if math.isinf(xn) or math.isnan(xn):
+                raise ValueError(f"Valor infinito o no definido en iteración {cont + 1}")
 
-            # Detectar cambio de signo (indica raíz)
-            if f_left * f_right < 0:
-                # Refinar la raíz usando bisección
-                raiz, iter_count = _biseccion_refinar(
-                    f, x_left, x_right, request.tol, request.niter, request.error_type
-                )
-                
-                f_raiz = _validate_real_value(f(raiz))
-                raices_encontradas.append({
-                    "raiz": raiz,
-                    "f_raiz": f_raiz,
-                    "iteraciones": iter_count
-                })
+            # Evaluar en el nuevo punto
+            fx = _validate_real_value(f(xn))
+            fx_prime = _validate_real_value(f_prime(xn))
+            fx_double_prime = _validate_real_value(f_double_prime(xn))
+
+            # Calcular error
+            err = _compute_error(xn, x0, request.error_type)
+
+            cont += 1
+            x0 = xn
+            d = fx_prime ** 2 - fx * fx_double_prime
+
+            iterations.append(RaicesMultiplesIteration(
+                i=cont,
+                x=xn,
+                f_x=fx,
+                error=err
+            ))
 
     except Exception as exc:
-        raise ValueError(f"Error durante la búsqueda de raíces: {exc}") from exc
+        raise ValueError(f"Error durante la iteración {cont}: {exc}") from exc
 
-    if raices_encontradas:
-        result.update(
-            raices=raices_encontradas,
-            total_raices=len(raices_encontradas),
-            message=f"Se encontraron {len(raices_encontradas)} raíz(ces)",
-            success=True
-        )
+    # Determinar conclusión y mensaje
+    root = x0
+    if abs(fx) < 1e-10:
+        message = f"Se encontró la raíz exacta en x = {root:.15f}"
+    elif err <= request.tol:
+        message = f"Se encontró una aproximación de la raíz con tolerancia {request.tol}"
+    elif cont >= request.niter:
+        message = f"Se alcanzó el máximo de iteraciones ({request.niter}) sin convergencia"
     else:
-        result.update(message="No se encontraron raíces en el intervalo especificado")
+        message = "El método se degeneró o no convergió"
 
-    return result
+    return RaicesMultiplesResponse(
+        iterations=iterations,
+        root=root,
+        message=message,
+        success=abs(fx) < request.tol or err <= request.tol,
+        error_type=request.error_type
+    )
