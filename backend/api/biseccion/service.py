@@ -127,7 +127,14 @@ def biseccion(biseccion: BiseccionRequest) -> dict:
 
         try:
             f_xm = _validate_real_value(f(xm))
-        except Exception as exc:
+        except (OverflowError, ValueError) as exc:
+            if isinstance(exc, OverflowError):
+                result.update(
+                    root=xm,
+                    message=f"Divergencia detectada en iteración {i}. Última aproximación válida = {xm}",
+                    success=False
+                )
+                return result
             raise ValueError(f"Error al evaluar la función en xm: {exc}") from exc
 
         error = _compute_error(xm, xa, biseccion.error_type)

@@ -112,7 +112,14 @@ def newton(newton_request: NewtonRequest) -> dict:
         try:
             fe = _validate_real_value(f(xn))
             dfe = _validate_real_value(df(xn))
-        except Exception as exc:
+        except (OverflowError, ValueError) as exc:
+            if isinstance(exc, OverflowError):
+                result.update(
+                    root=xn,
+                    message=f"Divergencia detectada en iteración {i}. Última aproximación válida = {xn}",
+                    success=False
+                )
+                return result
             raise ValueError(f"Error al evaluar la función en iteración {i}: {exc}") from exc
 
         error = _compute_error(xn, x0, newton_request.error_type)

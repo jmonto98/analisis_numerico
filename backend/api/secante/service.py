@@ -110,9 +110,20 @@ def secante(request: SecanteRequest) -> dict:
             result.update(message="División por cero: f(x0) == f(x1)")
             return result
 
-        # xn = x1 - f1 * (x1 - x0) / (f1 - f0)
-        xn = x1 - f1 * (x1 - x0) / (f1 - f0)
-        fn = _validate_real_value(f(xn))
+        try:
+            # xn = x1 - f1 * (x1 - x0) / (f1 - f0)
+            xn = x1 - f1 * (x1 - x0) / (f1 - f0)
+            fn = _validate_real_value(f(xn))
+        except (OverflowError, ValueError) as exc:
+            if isinstance(exc, OverflowError):
+                result.update(
+                    root=x1,
+                    message=f"Divergencia detectada en iteración {i}. Última aproximación válida = {x1}",
+                    success=False
+                )
+                return result
+            raise
+        
         error = _compute_error(xn, x1, request.error_type)
         
         iterations.append({
