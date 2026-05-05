@@ -9,8 +9,8 @@ const methods = [
   { id: 'newton', label: 'Newton' },
   { id: 'punto-fijo', label: 'Punto Fijo' },
   { id: 'raices-multiples', label: 'Raíces Múltiples' },
-  { id: 'secante', label: 'Secante' },
   { id: 'regla-falsa', label: 'Regla Falsa' },
+  { id: 'secante', label: 'Secante' },
 ];
 
 export default function EcuacionesNoLinealesLayout({

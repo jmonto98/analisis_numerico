@@ -37,9 +37,10 @@ export default function Home() {
               <ul className="space-y-2 text-sm mb-4">
                 <li>✓ Bisección</li>
                 <li>✓ Newton</li>
-                <li>✓ Punto Fijo</li>
-                <li>✓ Secante</li>
+                <li>✓ Punto Fijo</li>                
                 <li>✓ Raíces Múltiples</li>
+                <li>✓ Regla Falsa</li>
+                <li>✓ Secante</li>
               </ul>
               <Link href="/methods/ecuaciones-no-lineales">
                 <Button variant="outline" className="w-full">

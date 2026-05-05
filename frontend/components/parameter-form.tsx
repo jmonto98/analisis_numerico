@@ -45,7 +45,7 @@ interface ReglaFalsaFormData extends CommonParams {
   b: number;
 }
 
-export type FormData = BisectionFormData | NewtonFormData | PuntoFijoFormData | RaicesMultiplesFormData | SecanteFormData | ReglaFalsaFormData;
+export type FormData = BisectionFormData | NewtonFormData | PuntoFijoFormData | RaicesMultiplesFormData | ReglaFalsaFormData | SecanteFormData;
 
 interface ParameterFormProps {
   method: NumericalMethod;

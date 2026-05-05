@@ -78,7 +78,7 @@ export interface ReglaFalsaParams {
   niter: number;
 }
 
-export type MethodParams = BisectionParams | NewtonParams | PuntoFijoParams | RaicesMultiplesParams | SecanteParams | ReglaFalsaParams;
+export type MethodParams = BisectionParams | NewtonParams | PuntoFijoParams | RaicesMultiplesParams | ReglaFalsaParams | SecanteParams;
 
 export interface MethodConfig {
   id: NumericalMethod;
