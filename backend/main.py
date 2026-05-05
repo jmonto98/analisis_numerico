@@ -6,6 +6,7 @@ from api.newton.routes import newton_router
 from api.puntoFijo.routes import punto_fijo_router
 from api.raicesMultiples.routes import raices_multiples_router
 from api.secante.routes import secante_router
+from api.reglaFalsa.routes import regla_falsa_router
 
 app = FastAPI(
     title="API Análisis Numérico",
@@ -18,6 +19,7 @@ app.include_router(newton_router)
 app.include_router(punto_fijo_router)
 app.include_router(raices_multiples_router)
 app.include_router(secante_router)
+app.include_router(regla_falsa_router)
 
 app.add_middleware(
     CORSMiddleware,
