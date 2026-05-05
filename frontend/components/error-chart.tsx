@@ -80,7 +80,7 @@ export function ErrorChart({ niter }: ErrorChartProps) {
     );
   }
 
-  const colors = ["#3b82f6", "#ef4444", "#10b981", "#f59e0b"];
+  const colors = ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#d946ef"];
 
   return (
     <div className="space-y-4">
@@ -107,13 +107,25 @@ export function ErrorChart({ niter }: ErrorChartProps) {
 
       <div className="w-full h-80 rounded-lg border border-border bg-card p-4">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData}>
+          <LineChart data={chartData} margin={{ top: 40, right: 24, left: 16, bottom: 24 }}>
             <CartesianGrid strokeDasharray="3 3" />
+            <Legend
+              verticalAlign="top"
+              align="center"
+              wrapperStyle={{ fontSize: 12, paddingBottom: 8 }}
+              iconSize={10}
+            />
             <XAxis
               dataKey="i"
-              label={{ value: "Iteración (i)", position: "insideBottomRight", offset: -10 }}
+              tick={{ fontSize: 12 }}
+              label={{
+                value: "Iteración (i)",
+                position: "bottom",
+                offset: 0,
+                style: { fontSize: 12 },
+              }}
             />
-            <YAxis />
+            <YAxis tick={{ fontSize: 12 }} />
             <Tooltip
               formatter={(value: any) => {
                 if (typeof value === 'number') {
@@ -126,7 +138,6 @@ export function ErrorChart({ niter }: ErrorChartProps) {
               }}
               labelStyle={{ color: '#000' }}
             />
-            <Legend />
             {ERROR_TYPES.map((errorInfo, index) => {
               if (!selectedErrors.includes(errorInfo.value)) return null;
               const hasErrorData = chartData.some(d => d[errorInfo.value] !== undefined);
