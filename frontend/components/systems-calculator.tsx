@@ -15,6 +15,8 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { MatrixInput } from '@/components/matrix-input';
+import { SystemErrorChart } from '@/components/system-error-chart';
+import { SystemResultsSummary } from '@/components/system-results-summary';
 import { API_BASE_URL } from '@/lib/api-config';
 import { SystemIteration } from '@/lib/types';
 
@@ -160,18 +162,6 @@ export function SystemCalculator({ method, endpoint }: SystemCalculatorProps) {
                 />
               </div>
 
-              {/* Action Button */}
-              <Button onClick={handleCalculate} disabled={isLoading} className="w-full mt-6">
-                {isLoading ? (
-                  <>
-                    <Spinner className="mr-2 h-4 w-4" />
-                    Calculando...
-                  </>
-                ) : (
-                  'Calcular'
-                )}
-              </Button>
-
               {/* Error Alert */}
               {error && (
                 <Alert variant="destructive" className="mt-4">
@@ -184,11 +174,11 @@ export function SystemCalculator({ method, endpoint }: SystemCalculatorProps) {
 
         {/* Right: Matrix Input */}
         <div>
-          <Card className="border-2">
+          <Card className="border-2 h-full">
             <CardHeader>
               <CardTitle>Matriz A y Vector b</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <MatrixInput 
                 size={matrixSize} 
                 matrix={matrix} 
@@ -196,6 +186,18 @@ export function SystemCalculator({ method, endpoint }: SystemCalculatorProps) {
                 vectorB={vectorB}
                 onVectorBChange={setVectorB}
               />
+
+              {/* Action Button */}
+              <Button onClick={handleCalculate} disabled={isLoading} className="w-full mt-6">
+                {isLoading ? (
+                  <>
+                    <Spinner className="mr-2 h-4 w-4" />
+                    Calculando...
+                  </>
+                ) : (
+                  'Calcular'
+                )}
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -207,27 +209,13 @@ export function SystemCalculator({ method, endpoint }: SystemCalculatorProps) {
           <CardHeader>
             <CardTitle>Solución</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <p className="text-sm text-muted-foreground mb-3">{message}</p>
-              <div className="bg-muted p-4 rounded-lg">
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {solution.map((val, i) => (
-                    <div key={`sol-${i}`} className="text-center">
-                      <p className="text-xs text-muted-foreground">x{i + 1}</p>
-                      <p className="font-mono font-semibold text-sm">{val.toFixed(8)}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {converged ? (
-                <p className="text-green-600 font-medium">✓ Sistema convergió</p>
-              ) : (
-                <p className="text-yellow-600 font-medium">⚠ No convergió en el máximo de iteraciones</p>
-              )}
-            </div>
+          <CardContent>
+            <SystemResultsSummary
+              solution={solution}
+              iterations={iterations}
+              message={message}
+              converged={converged}
+            />
           </CardContent>
         </Card>
       )}
@@ -235,17 +223,17 @@ export function SystemCalculator({ method, endpoint }: SystemCalculatorProps) {
       {/* Row 3: Análisis de Errores | Iteraciones */}
       {solution && iterations.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Análisis de Errores (placeholder for now) */}
+          {/* Análisis de Errores */}
           <Card className="border-2">
             <CardHeader>
               <CardTitle>Análisis de Errores</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground text-sm">Gráfico de convergencia (próximamente)</p>
+              <SystemErrorChart iterations={iterations} />
             </CardContent>
           </Card>
 
-          {/* Iterations Table */}
+          {/* Iteraciones Table */}
           <Card className="border-2">
             <CardHeader>
               <CardTitle>Iteraciones</CardTitle>

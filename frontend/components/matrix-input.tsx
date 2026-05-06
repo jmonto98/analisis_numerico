@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 
 interface MatrixInputProps {
@@ -63,6 +63,34 @@ export function MatrixInput({
     newVector[index] = parseValue(value);
     onVectorBChange(newVector);
   };
+
+  // Sincronizar matrixDisplay cuando cambia el tamaño
+  useEffect(() => {
+    const newDisplayMatrix = Array(size)
+      .fill(null)
+      .map((_, i) => 
+        Array(size)
+          .fill(null)
+          .map((_, j) => {
+            // Conservar valores existentes si existen
+            if (i < matrixDisplay.length && j < matrixDisplay[i].length) {
+              return matrixDisplay[i][j];
+            }
+            return '';
+          })
+      );
+    setMatrixDisplay(newDisplayMatrix);
+
+    const newDisplayVector = Array(size)
+      .fill(null)
+      .map((_, i) => {
+        if (i < vectorBDisplay.length) {
+          return vectorBDisplay[i];
+        }
+        return '';
+      });
+    setVectorBDisplay(newDisplayVector);
+  }, [size]);
 
   return (
     <div className="space-y-4">
