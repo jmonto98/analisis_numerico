@@ -20,12 +20,12 @@ interface ErrorChartProps {
 
 type ErrorType = "absolute" | "error" | "relative1" | "relative2" | "conditional";
 
-const ERROR_TYPES: { value: ErrorType; label: string; yLabel: string }[] = [
-  { value: "absolute", label: "Absoluto", yLabel: "Absoluto: |Xⱼ₊₁ - Xⱼ|" },
-  { value: "conditional", label: "Condicional", yLabel: "Condicional: |f(Xᵢ)|" },
-  { value: "error", label: "Relativo", yLabel: "Relativo: |Xⱼ₊₁ - Xⱼ| / |Xⱼ|" },
-  { value: "relative1", label: "Relativo 1", yLabel: "Relativo 1: |Xⱼ₊₁ - Xⱼ| / |Xⱼ|" },
-  { value: "relative2", label: "Relativo 2", yLabel: "Relativo 2: |Xⱼ₊₁ - Xⱼ| / |Xⱼ₊₁|" },
+const ERROR_TYPES: { value: ErrorType; label: string; yLabel: string; formula: string; color: string }[] = [
+  { value: "absolute", label: "Absoluto", yLabel: "Absoluto", formula: "|Xⱼ₊₁ - Xⱼ|", color: "#3b82f6" },
+  { value: "conditional", label: "Condicional", yLabel: "Condicional", formula: "|f(Xᵢ)|", color: "#ef4444" },
+  { value: "error", label: "Relativo", yLabel: "Relativo", formula: "|Xⱼ₊₁ - Xⱼ| / |Xⱼ|", color: "#10b981" },
+  { value: "relative1", label: "Relativo 1", yLabel: "Relativo 1", formula: "|Xⱼ₊₁ - Xⱼ| / |Xⱼ|", color: "#f59e0b" },
+  { value: "relative2", label: "Relativo 2", yLabel: "Relativo 2", formula: "|Xⱼ₊₁ - Xⱼ| / |Xⱼ₊₁|", color: "#d946ef" },
 ];
 
 export function ErrorChart({ niter }: ErrorChartProps) {
@@ -147,8 +147,8 @@ export function ErrorChart({ niter }: ErrorChartProps) {
                   key={errorInfo.value}
                   type="monotone"
                   dataKey={errorInfo.value}
-                  stroke={colors[index % colors.length]}
-                  dot={{ fill: colors[index % colors.length], r: 4 }}
+                  stroke={errorInfo.color}
+                  dot={{ fill: errorInfo.color, r: 4 }}
                   isAnimationActive={false}
                   name={errorInfo.yLabel}
                   strokeWidth={2}
@@ -157,6 +157,24 @@ export function ErrorChart({ niter }: ErrorChartProps) {
             })}
           </LineChart>
         </ResponsiveContainer>
+      </div>
+
+      <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+        <p className="text-sm font-semibold text-foreground mb-3">Fórmulas de Errores</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {ERROR_TYPES.map((errorType) => (
+            <div key={errorType.value} className="flex items-center gap-3">
+              <div 
+                className="w-3 h-3 rounded-full flex-shrink-0" 
+                style={{ backgroundColor: errorType.color }}
+              />
+              <div className="flex-1">
+                <span className="text-sm font-medium text-foreground">{errorType.label}:</span>
+                <span className="text-sm text-muted-foreground ml-2">{errorType.formula}</span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
