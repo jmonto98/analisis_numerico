@@ -1,5 +1,7 @@
 export type NumericalMethod = "biseccion" | "newton" | "punto-fijo" | "raices-multiples" | "secante" | "regla-falsa";
 
+export type LinearSystemMethod = "jacobi" | "gauss-seidel" | "sor";
+
 export type ErrorType = "relative" | "absolute";
 
 export interface IterationResult {
@@ -25,12 +27,27 @@ export interface IterationResult {
   error_conditional?: number | null;
 }
 
+export interface SystemIteration {
+  i: number;
+  x: number[];
+  error?: number | null;
+}
+
 export interface MethodResponse {
   success: boolean;
   iterations: IterationResult[];
   root?: number;
   message?: string;
   error_type: string;
+}
+
+export interface SystemResponse {
+  iterations: SystemIteration[];
+  solution: number[];
+  root: number[];
+  message: string;
+  converged: boolean;
+  final_error?: number;
 }
 
 export interface BisectionParams {

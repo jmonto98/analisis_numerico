@@ -11,10 +11,9 @@ const categories = [
     description: 'Métodos para encontrar raíces de ecuaciones',
   },
   {
-    id: 'sistemas-ecuaciones',
+    id: 'sistemas-lineales',
     label: 'Sistemas de Ecuaciones',
     description: 'Métodos para resolver sistemas lineales',
-    disabled: true,
   },
   {
     id: 'interpolacion',
