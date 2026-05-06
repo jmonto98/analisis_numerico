@@ -1,6 +1,6 @@
 'use client';
 
-import { Input } from '@/components/ui/input';
+import { useState } from 'react';
 import { Label } from '@/components/ui/label';
 
 interface MatrixInputProps {
@@ -37,13 +37,28 @@ export function MatrixInput({
   vectorB, 
   onVectorBChange 
 }: MatrixInputProps) {
+  const [matrixDisplay, setMatrixDisplay] = useState<string[][]>(
+    matrix.map(row => row.map(val => val.toString()))
+  );
+  const [vectorBDisplay, setVectorBDisplay] = useState<string[]>(
+    vectorB.map(val => val.toString())
+  );
+
   const handleMatrixCellChange = (row: number, col: number, value: string) => {
+    const newDisplayMatrix = matrixDisplay.map(r => [...r]);
+    newDisplayMatrix[row][col] = value;
+    setMatrixDisplay(newDisplayMatrix);
+
     const newMatrix = matrix.map(r => [...r]);
     newMatrix[row][col] = parseValue(value);
     onMatrixChange(newMatrix);
   };
 
   const handleVectorBChange = (index: number, value: string) => {
+    const newDisplayVector = [...vectorBDisplay];
+    newDisplayVector[index] = value;
+    setVectorBDisplay(newDisplayVector);
+
     const newVector = [...vectorB];
     newVector[index] = parseValue(value);
     onVectorBChange(newVector);
@@ -64,13 +79,13 @@ export function MatrixInput({
               {matrix.map((row, i) => (
                 <div key={`row-${i}`} className="flex gap-2">
                   {row.map((val, j) => (
-                    <Input
+                    <input
                       key={`a-${i}-${j}`}
                       type="text"
-                      value={val === 0 ? '' : val.toString()}
+                      value={matrixDisplay[i][j]}
                       onChange={(e) => handleMatrixCellChange(i, j, e.target.value)}
                       placeholder="0"
-                      className="w-14 h-10 text-center text-sm font-mono"
+                      className="w-14 h-10 text-center text-sm font-mono border rounded px-2 py-1"
                     />
                   ))}
                 </div>
@@ -87,12 +102,12 @@ export function MatrixInput({
               {vectorB.map((val, i) => (
                 <div key={`b-${i}`} className="flex items-center gap-2">
                   <span className="text-xs font-medium w-6">b{i + 1}</span>
-                  <Input
+                  <input
                     type="text"
-                    value={val === 0 ? '' : val.toString()}
+                    value={vectorBDisplay[i]}
                     onChange={(e) => handleVectorBChange(i, e.target.value)}
                     placeholder="0"
-                    className="w-16 h-10 text-center text-sm font-mono"
+                    className="w-16 h-10 text-center text-sm font-mono border rounded px-2 py-1"
                   />
                 </div>
               ))}
