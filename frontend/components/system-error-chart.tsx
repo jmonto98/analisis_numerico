@@ -29,7 +29,13 @@ const ERROR_TYPES: { value: ErrorType; label: string; color: string; formula: st
 ];
 
 // Calcula los 5 tipos de error entre dos vectores
-function calculateErrors(x_n: number[], x_prev: number[]): { [key: string]: number } {
+function calculateErrors(x_n: number[], x_prev: number[]): {
+  error_absoluto: number;
+  error_relativo_1: number;
+  error_relativo_2: number;
+  error_relativo_3: number;
+  error_relativo_4: number;
+} {
   const diff = x_n.map((val, i) => val - x_prev[i]);
   
   // Error absoluto: max(|X_n - X_n-1|)
