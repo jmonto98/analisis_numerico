@@ -1,6 +1,7 @@
 import numpy as np
-from typing import List, Tuple, Dict, Any
+from typing import List, Tuple
 from .schemas import JacobiIteration
+from api.utils.linear_solver_utils import validate_system, check_diagonal_dominance, calculate_error
 
 
 def jacobi_method(
@@ -23,22 +24,14 @@ def jacobi_method(
     Returns:
         Tuple of (solution, iterations_data, converged, final_error)
     """
+    # Validate system
+    validate_system(matrix, b)
+    check_diagonal_dominance(matrix)
+    
     # Convert to numpy arrays
     a = np.array(matrix, dtype=float)
     b_vec = np.array(b, dtype=float)
     n = a.shape[0]
-    
-    # Check if matrix is square
-    if a.shape[0] != a.shape[1]:
-        raise ValueError("Matrix A must be square")
-    
-    if len(b_vec) != n:
-        raise ValueError("Vector b must have same length as matrix rows")
-    
-    # Check diagonal dominance (recommended but not required)
-    for i in range(n):
-        if abs(a[i, i]) <= 1e-10:
-            raise ValueError(f"Diagonal element a[{i},{i}] is zero or near-zero")
     
     # Initialize solution
     x = np.array(x0, dtype=float) if x0 else np.zeros(n)
@@ -64,13 +57,13 @@ def jacobi_method(
             x_new[i] = (b_vec[i] - suma) / a[i, i]
         
         # Calculate error
-        error = np.linalg.norm(x_new - x) / np.linalg.norm(x_new) if np.any(x_new) else np.linalg.norm(x_new - x)
+        error = calculate_error(x_new, x)
         
         # Store iteration
         iteration_data = JacobiIteration(
             i=k+1,
             x=x_new.tolist(),
-            error=float(error) if not np.isnan(error) else None,
+            error=error,
         )
         iterations.append(iteration_data)
         
