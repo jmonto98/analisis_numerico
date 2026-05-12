@@ -33,6 +33,7 @@ export function SystemCalculator({ method, endpoint }: SystemCalculatorProps) {
       .map(() => Array(2).fill(0))
   );
   const [vectorB, setVectorB] = useState<number[]>([0, 0]);
+  const [vectorX0, setVectorX0] = useState<number[]>([0, 0]);
   const [tol, setTol] = useState('1e-4');
   const [niter, setNiter] = useState(100);
 
@@ -43,9 +44,10 @@ export function SystemCalculator({ method, endpoint }: SystemCalculatorProps) {
   const [error, setError] = useState<string | null>(null);
   const [converged, setConverged] = useState(false);
 
-  // Update vector B size when matrix size changes
+  // Update vector B and X0 size when matrix size changes
   useEffect(() => {
     setVectorB(Array(matrixSize).fill(0));
+    setVectorX0(Array(matrixSize).fill(0));
     setMatrix(
       Array(matrixSize)
         .fill(null)
@@ -74,6 +76,7 @@ export function SystemCalculator({ method, endpoint }: SystemCalculatorProps) {
       const payload = {
         matrix: matrix,
         b: vectorB,
+        x0: vectorX0,
         tol: tolValue,
         niter: niter,
       };
@@ -108,8 +111,8 @@ export function SystemCalculator({ method, endpoint }: SystemCalculatorProps) {
   return (
     <div className="space-y-6">
       {/* Row 1: Parámetros | Matriz y Vector b */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left: Parameters */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left: Parameters (1 column) */}
         <div>
           <Card className="border-2 h-full">
             <CardHeader>
@@ -172,11 +175,11 @@ export function SystemCalculator({ method, endpoint }: SystemCalculatorProps) {
           </Card>
         </div>
 
-        {/* Right: Matrix Input */}
-        <div>
+        {/* Right: Matrix Input (2 columns) */}
+        <div className="lg:col-span-2">
           <Card className="border-2 h-full">
             <CardHeader>
-              <CardTitle>Matriz A y Vector b</CardTitle>
+              <CardTitle>Matriz A, x0 y Vector b</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <MatrixInput 
@@ -185,6 +188,8 @@ export function SystemCalculator({ method, endpoint }: SystemCalculatorProps) {
                 onMatrixChange={setMatrix}
                 vectorB={vectorB}
                 onVectorBChange={setVectorB}
+                x0={vectorX0}
+                onX0Change={setVectorX0}
               />
 
               {/* Action Button */}

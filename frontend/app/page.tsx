@@ -50,7 +50,7 @@ export default function Home() {
             </CardContent>
           </Card>
 
-          <Card className="border-2 opacity-50 cursor-not-allowed">
+          <Card className="border-2">
             <CardHeader>
               <CardTitle>Sistemas de Ecuaciones</CardTitle>
               <CardDescription>
@@ -58,14 +58,16 @@ export default function Home() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2 text-sm mb-4">
-                <li>○ Eliminación Gaussiana</li>
-                <li>○ Gauss-Jordan</li>
+              <ul className="space-y-2 text-sm mb-4">              
+                <li>○ Gauss-Seidel</li>
                 <li>○ Jacobi</li>
+                <li>○ SOR </li>
               </ul>
-              <Button variant="outline" className="w-full" disabled>
-                Próximamente
-              </Button>
+              <Link href="/methods/sistemas-lineales">
+                <Button variant="outline" className="w-full">
+                  Acceder
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
@@ -79,8 +81,9 @@ export default function Home() {
             <CardContent>
               <ul className="space-y-2 text-sm mb-4">
                 <li>○ Lagrange</li>
-                <li>○ Diferencias Divididas</li>
+                <li>○ Newton Interpolante</li>
                 <li>○ Splines</li>
+                <li>○ Vandermonde</li>
               </ul>
               <Button variant="outline" className="w-full" disabled>
                 Próximamente

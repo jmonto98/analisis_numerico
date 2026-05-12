@@ -42,9 +42,17 @@ def jacobi_method(
     
     # Initialize solution
     x = np.array(x0, dtype=float) if x0 else np.zeros(n)
-    x_prev = x.copy()
     
     iterations = []
+    
+    # Store initial approximation x0 as iteration 0
+    iteration_data = JacobiIteration(
+        i=0,
+        x=x.tolist(),
+        error=None,  # No error for initial value
+    )
+    iterations.append(iteration_data)
+    
     converged = False
     final_error = float('inf')
     
@@ -60,7 +68,7 @@ def jacobi_method(
         
         # Store iteration
         iteration_data = JacobiIteration(
-            i=k,
+            i=k+1,
             x=x_new.tolist(),
             error=float(error) if not np.isnan(error) else None,
         )

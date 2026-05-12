@@ -9,6 +9,8 @@ interface MatrixInputProps {
   onMatrixChange: (matrix: number[][]) => void;
   vectorB: number[];
   onVectorBChange: (vector: number[]) => void;
+  x0?: number[];
+  onX0Change?: (vector: number[]) => void;
 }
 
 // Helper function to convert fraction strings to decimal
@@ -35,13 +37,18 @@ export function MatrixInput({
   matrix, 
   onMatrixChange, 
   vectorB, 
-  onVectorBChange 
+  onVectorBChange,
+  x0,
+  onX0Change
 }: MatrixInputProps) {
   const [matrixDisplay, setMatrixDisplay] = useState<string[][]>(
     matrix.map(row => row.map(val => val.toString()))
   );
   const [vectorBDisplay, setVectorBDisplay] = useState<string[]>(
     vectorB.map(val => val.toString())
+  );
+  const [x0Display, setX0Display] = useState<string[]>(
+    x0 ? x0.map(val => val.toString()) : Array(size).fill('')
   );
 
   const handleMatrixCellChange = (row: number, col: number, value: string) => {
@@ -64,7 +71,26 @@ export function MatrixInput({
     onVectorBChange(newVector);
   };
 
-  // Sincronizar matrixDisplay cuando cambia el tamaño
+  const handleX0Change = (index: number, value: string) => {
+    const newDisplayVector = [...x0Display];
+    newDisplayVector[index] = value;
+    setX0Display(newDisplayVector);
+
+    if (onX0Change) {
+      const newVector = x0 ? [...x0] : Array(size).fill(0);
+      newVector[index] = parseValue(value);
+      onX0Change(newVector);
+    }
+  };
+
+  // Sincronizar x0Display cuando el prop x0 cambia (después de onX0Change)
+  useEffect(() => {
+    if (x0) {
+      setX0Display(x0.map(val => val.toString()));
+    }
+  }, [x0]);
+
+  // Sincronizar displays cuando cambia el tamaño
   useEffect(() => {
     const newDisplayMatrix = Array(size)
       .fill(null)
@@ -90,6 +116,16 @@ export function MatrixInput({
         return '';
       });
     setVectorBDisplay(newDisplayVector);
+
+    const newDisplayX0 = Array(size)
+      .fill(null)
+      .map((_, i) => {
+        if (i < x0Display.length) {
+          return x0Display[i];
+        }
+        return '';
+      });
+    setX0Display(newDisplayX0);
   }, [size]);
 
   return (
@@ -98,7 +134,7 @@ export function MatrixInput({
         Soporta fracciones (ej: 1/2) y notación científica (ej: 1e-4)
       </p>
       
-      <div className="flex gap-6">
+      <div className="flex gap-4">
         {/* Matrix Grid */}
         <div className="flex-1">
           <Label className="text-sm font-medium mb-3 block">Matriz A ({size}x{size})</Label>
@@ -122,6 +158,27 @@ export function MatrixInput({
           </div>
         </div>
 
+        {/* Vector x0 */}
+        <div>
+          <Label className="text-sm font-medium mb-3 block">Vector x0</Label>
+          <div className="border rounded-lg p-3 bg-muted/30">
+            <div className="space-y-2">
+              {x0Display.map((val, i) => (
+                <div key={`x0-${i}`} className="flex items-center gap-2">
+                  <span className="text-xs font-medium w-6">x0{i + 1}</span>
+                  <input
+                    type="text"
+                    value={val}
+                    onChange={(e) => handleX0Change(i, e.target.value)}
+                    placeholder="0"
+                    className="w-16 h-10 text-center text-sm font-mono border rounded px-2 py-1"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {/* Vector B Column */}
         <div>
           <Label className="text-sm font-medium mb-3 block">Vector b</Label>
@@ -138,12 +195,12 @@ export function MatrixInput({
                     className="w-16 h-10 text-center text-sm font-mono border rounded px-2 py-1"
                   />
                 </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
   );
 }
 
