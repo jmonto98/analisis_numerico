@@ -6,8 +6,8 @@ import { cn } from '@/lib/utils';
 
 const methods = [
   { id: 'jacobi', label: 'Jacobi' },
-  { id: 'gauss-seidel', label: 'Gauss-Seidel (Próximamente)', disabled: true },
-  { id: 'sor', label: 'SOR (Próximamente)', disabled: true },
+  { id: 'gauss-seidel', label: 'Gauss-Seidel' },
+  { id: 'sor', label: 'SOR' },
 ];
 
 export default function SistemasLinealesLayout({
