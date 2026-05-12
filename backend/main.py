@@ -8,6 +8,8 @@ from api.raicesMultiples.routes import raices_multiples_router
 from api.secante.routes import secante_router
 from api.reglaFalsa.routes import regla_falsa_router
 from api.jacobi.routes import router as jacobi_router
+from api.gauss_seidel.routes import router as gauss_seidel_router
+from api.sor.routes import router as sor_router
 
 app = FastAPI(
     title="API Análisis Numérico",
@@ -22,6 +24,8 @@ app.include_router(raices_multiples_router)
 app.include_router(secante_router)
 app.include_router(regla_falsa_router)
 app.include_router(jacobi_router)
+app.include_router(gauss_seidel_router)
+app.include_router(sor_router)
 
 app.add_middleware(
     CORSMiddleware,
