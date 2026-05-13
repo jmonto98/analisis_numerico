@@ -71,7 +71,7 @@ export default function Home() {
             </CardContent>
           </Card>
 
-          <Card className="border-2 opacity-50 cursor-not-allowed">
+          <Card className="border-2">
             <CardHeader>
               <CardTitle>Interpolación</CardTitle>
               <CardDescription>
@@ -80,14 +80,16 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <ul className="space-y-2 text-sm mb-4">
+                <li>✓ Vandermonde</li>
                 <li>○ Lagrange</li>
                 <li>○ Newton Interpolante</li>
                 <li>○ Splines</li>
-                <li>○ Vandermonde</li>
               </ul>
-              <Button variant="outline" className="w-full" disabled>
-                Próximamente
-              </Button>
+              <Link href="/methods/interpolacion">
+                <Button variant="outline" className="w-full">
+                  Acceder
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </div>

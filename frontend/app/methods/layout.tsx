@@ -19,7 +19,6 @@ const categories = [
     id: 'interpolacion',
     label: 'Interpolación',
     description: 'Métodos de interpolación polinomial',
-    disabled: true,
   },
 ];
 
@@ -47,18 +46,17 @@ export default function MethodsLayout({
           {categories.map((category) => (
             <Link
               key={category.id}
-              href={category.disabled ? '#' : `/methods/${category.id}`}
+              href={`/methods/${category.id}`}
               className={cn(
                 'p-4 rounded-lg border-2 transition-all',
                 pathname.includes(category.id)
                   ? 'border-primary bg-primary/5'
                   : 'border-border hover:border-primary/50 bg-card',
-                category.disabled && 'opacity-50 cursor-not-allowed hover:border-border',
+                
               )}
             >
               <h3 className="font-semibold mb-1">{category.label}</h3>
               <p className="text-sm text-muted-foreground">{category.description}</p>
-              {category.disabled && <p className="text-xs text-primary mt-2">Próximamente</p>}
             </Link>
           ))}
         </div>
