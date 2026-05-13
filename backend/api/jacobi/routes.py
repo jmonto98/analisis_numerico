@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from .schemas import JacobiRequest, JacobiResponse, JacobiIteration
 from .service import jacobi_method
 
-router = APIRouter(prefix="/jacobi", tags=["jacobi"])
+router = APIRouter(prefix="/jacobi", tags=["linear_systems"])
 
 
 @router.post("")
