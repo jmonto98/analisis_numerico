@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { VandermondePointsInput } from '@/components/vandermonde-points-input';
 import { VandermondeErrorChart } from '@/components/vandermonde-error-chart';
-import { VandermondeResultsDisplay } from '@/components/vandermonde-results-display';
 import { API_BASE_URL } from '@/lib/api-config';
 
 interface VandermondePoint {
@@ -183,52 +182,183 @@ export function VandermondeCalculator() {
             <AlertDescription className="text-green-800">{results.message}</AlertDescription>
           </Alert>
 
-          {/* Resultado Card */}
-          <Card className="border-teal-200 bg-teal-50">
+          {/* Resultado Card and Error Cards in same row */}
+          <div className="grid grid-cols-1 lg:grid-cols-6 gap-4">
+            {/* Resultado Card */}
+            <Card className="bg-primary/10 border border-primary/30 lg:col-span-3">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-primary text-sm">Resultado</CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col">
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Grado</span>
+                  <span className="text-lg font-mono font-semibold text-foreground">{results.polynomial_degree}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Puntos</span>
+                  <span className="text-lg font-mono font-semibold text-foreground">{results.training_points.length}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Mín</span>
+                  <span className="text-lg font-mono font-semibold text-foreground">{results.domain.min_x.toFixed(3)}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Máx</span>
+                  <span className="text-lg font-mono font-semibold text-foreground">{results.domain.max_x.toFixed(3)}</span>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Error Cards */}
+            <Card className="bg-primary/10 border border-primary/30 lg:col-span-1">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-primary">E₁₀</CardTitle>
+              </CardHeader>
+              <CardContent className="p-3 space-y-2">
+                <div className="text-lg font-mono font-semibold text-foreground">{results.error_10.toExponential(4)}</div>
+                <p className="text-[11px] text-muted-foreground">10% validación</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-primary/10 border border-primary/30 lg:col-span-1">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-primary">E₂₀</CardTitle>
+              </CardHeader>
+              <CardContent className="p-3 space-y-2">
+                <div className="text-lg font-mono font-semibold text-foreground">{results.error_20.toExponential(4)}</div>
+                <p className="text-[11px] text-muted-foreground">20% validación</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-primary/10 border border-primary/30 lg:col-span-1">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm text-primary">E₃₀</CardTitle>
+              </CardHeader>
+              <CardContent className="p-3 space-y-2">
+                <div className="text-lg font-mono font-semibold text-foreground">{results.error_30.toExponential(4)}</div>
+                <p className="text-[11px] text-muted-foreground">30% validación</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Graph Card */}
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Gráfico del Polinomio Interpolante</CardTitle>
+                <p className="text-sm text-gray-600 mt-2">Puntos de interpolación y polinomio resultante</p>
+              </CardHeader>
+              <CardContent>
+                <VandermondeErrorChart
+                  training_points={results.training_points}
+                  coefficients={results.coefficients}
+                  domain={results.domain}
+                  error_10={results.error_10}
+                  error_20={results.error_20}
+                  error_30={results.error_30}
+                  eval_results={results.eval_results}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Polynomial and Coefficients below the graph */}
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              <Card className="bg-primary/10 border border-primary/30">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base text-primary">Polinomio Resultante</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="text-center font-mono text-xs bg-muted/50 rounded-lg p-3 overflow-x-auto whitespace-pre-wrap max-h-28 overflow-y-auto">
+                    {results.polynomial_str}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-primary/10 border border-primary/30">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base text-primary">Coeficientes</CardTitle>
+                  <p className="text-xs text-muted-foreground mt-1">a₀ + a₁x + a₂x² + ... + aₙxⁿ</p>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                    {results.coefficients.map((coeff, i) => (
+                      <div key={i} className="bg-muted/50 p-2 rounded flex justify-between items-center">
+                        <p className="text-xs text-muted-foreground font-semibold">a₍{i}₎</p>
+                        <p className="font-mono text-xs font-bold break-all">
+                          {Math.abs(coeff) < 1e-10 ? '0' : coeff.toExponential(2)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Full Width: Matrix Section */}
+          <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-green-700">Resultado</CardTitle>
+              <CardTitle className="text-base">Sistema Ax = b ({results.matrix_A.length}×{results.matrix_A[0]?.length})</CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">Matriz de Vandermonde y vectores de entrada/salida</p>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div>
-                  <p className="text-xs text-teal-700 uppercase tracking-wide font-semibold">Grado Polinomial</p>
-                  <p className="text-lg font-bold text-teal-900">{results.polynomial_degree}</p>
+            <CardContent>
+              <div className="space-y-6">
+                {/* Matriz A - Ampliada */}
+                <div className="border border-border rounded-lg p-4 overflow-x-auto">
+                  <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase">Matriz A</p>
+                  <div 
+                    className="grid gap-1" 
+                    style={{ 
+                      gridTemplateColumns: `repeat(${Math.min(results.matrix_A[0]?.length || 0, 10)}, minmax(50px, 1fr))`,
+                      minWidth: 'min-content'
+                    }}
+                  >
+                    {results.matrix_A.map((row, i) =>
+                      row.map((val, j) => (
+                        <div
+                          key={`${i}-${j}`}
+                          className="bg-muted/50 border border-border rounded p-2 text-center"
+                          title={val.toExponential(6)}
+                        >
+                          <p className="font-mono text-xs font-bold">
+                            {Math.abs(val) < 1e-10 ? '0' : val.toFixed(2)}
+                          </p>
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs text-teal-700 uppercase tracking-wide font-semibold">Puntos de Entrada</p>
-                  <p className="text-lg font-bold text-teal-900">{results.training_points.length}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-teal-700 uppercase tracking-wide font-semibold">Dominio (Mín)</p>
-                  <p className="text-lg font-bold text-teal-900">{results.domain.min_x.toFixed(3)}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-teal-700 uppercase tracking-wide font-semibold">Dominio (Máx)</p>
-                  <p className="text-lg font-bold text-teal-900">{results.domain.max_x.toFixed(3)}</p>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Vector x0 */}
+                  <div className="border border-border rounded-lg p-4">
+                    <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase">Vector x₀</p>
+                    <div className="grid gap-1 max-h-64 overflow-y-auto">
+                      {results.training_points.map((p, i) => (
+                        <div key={i} className="grid grid-cols-[auto_1fr] gap-2 items-center bg-muted/50 border border-border rounded p-2">
+                          <p className="text-xs text-muted-foreground font-semibold">x{i}</p>
+                          <p className="font-mono text-xs font-bold text-right">{p.x.toFixed(3)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Vector b */}
+                  <div className="border border-border rounded-lg p-4">
+                    <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase">Vector b</p>
+                    <div className="grid gap-1 max-h-64 overflow-y-auto">
+                      {results.training_points.map((p, i) => (
+                        <div key={i} className="grid grid-cols-[auto_1fr] gap-2 items-center bg-muted/50 border border-border rounded p-2">
+                          <p className="text-xs text-muted-foreground font-semibold">b{i}</p>
+                          <p className="font-mono text-xs font-bold text-right">{p.y.toFixed(3)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
-
-          {/* Error Chart / Polynomial Graph */}
-          <VandermondeErrorChart
-            training_points={results.training_points}
-            coefficients={results.coefficients}
-            domain={results.domain}
-            error_10={results.error_10}
-            error_20={results.error_20}
-            error_30={results.error_30}
-            eval_results={results.eval_results}
-          />
-
-          {/* Results Display */}
-          <VandermondeResultsDisplay
-            polynomial_str={results.polynomial_str}
-            coefficients={results.coefficients}
-            matrix_A={results.matrix_A}
-            polynomial_degree={results.polynomial_degree}
-            training_points={results.training_points}
-          />
 
           {/* Eval Results */}
           {results.eval_results && results.eval_results.length > 0 && (

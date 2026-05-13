@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { ScatterChart, Scatter, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 
 interface VandermondePoint {
@@ -99,139 +98,107 @@ export function VandermondeErrorChart({
 
   return (
     <div className="space-y-6">
-      {/* Error Cards */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <div className="text-xs text-gray-600 font-semibold uppercase">E₁₀</div>
-          <div className="text-sm font-mono font-bold text-blue-700 mt-1">
-            {error_10.toExponential(4)}
+      {/* Polynomial Interpolation Graph */}
+      <div>
+        {/* Checkboxes for visibility control */}
+        <div className="flex gap-6 mb-4">
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="show-polynomial"
+              checked={showPolynomial}
+              onCheckedChange={(checked) => setShowPolynomial(checked === true)}
+            />
+            <label htmlFor="show-polynomial" className="text-sm font-medium cursor-pointer">
+              Polinomio P(x)
+            </label>
           </div>
-          <div className="text-xs text-gray-500 mt-1">10% validación</div>
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="show-points"
+              checked={showInterpolationPoints}
+              onCheckedChange={(checked) => setShowInterpolationPoints(checked === true)}
+            />
+            <label htmlFor="show-points" className="text-sm font-medium cursor-pointer">
+              Puntos de Interpolación
+            </label>
+          </div>
         </div>
-        <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-          <div className="text-xs text-gray-600 font-semibold uppercase">E₂₀</div>
-          <div className="text-sm font-mono font-bold text-green-700 mt-1">
-            {error_20.toExponential(4)}
-          </div>
-          <div className="text-xs text-gray-500 mt-1">20% validación</div>
-        </div>
-        <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
-          <div className="text-xs text-gray-600 font-semibold uppercase">E₃₀</div>
-          <div className="text-sm font-mono font-bold text-orange-700 mt-1">
-            {error_30.toExponential(4)}
-          </div>
-          <div className="text-xs text-gray-500 mt-1">30% validación</div>
+        <div className="w-full h-80 rounded-lg border border-border bg-card p-4">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart margin={{ top: 16, right: 24, left: 16, bottom: 24 }} data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                type="number"
+                dataKey="x"
+                domain={[xMin - xPadding, xMax + xPadding]}
+                tick={{ fontSize: 12 }}
+                label={{
+                  value: 'x',
+                  position: 'insideBottomRight',
+                  offset: -8,
+                  style: { fontSize: 12 },
+                }}
+              />
+              <YAxis
+                type="number"
+                domain={[yMin - yPadding, yMax + yPadding]}
+                tick={{ fontSize: 12 }}
+                label={{
+                  value: 'y',
+                  angle: -90,
+                  position: 'insideLeft',
+                  style: { fontSize: 12 },
+                }}
+              />
+              <Tooltip
+                formatter={(value: any) => {
+                  if (typeof value === 'number') {
+                    return value.toFixed(6);
+                  }
+                  return value;
+                }}
+                labelStyle={{ color: '#000' }}
+              />
+              <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
+
+              {/* Polinomio interpolado - línea azul */}
+              {showPolynomial && (
+                <Line
+                  type="monotone"
+                  dataKey="y_poly"
+                  stroke="#3b82f6"
+                  strokeWidth={2}
+                  dot={false}
+                  name="Polinomio P(x)"
+                  isAnimationActive={false}
+                />
+              )}
+
+              {/* Puntos de interpolación - círculos rojos */}
+              {showInterpolationPoints && (
+                <Scatter
+                  name="Puntos de Interpolación"
+                  data={interpolationData}
+                  dataKey="y"
+                  fill="#ef4444"
+                  shape="circle"
+                />
+              )}
+
+              {/* Puntos de evaluación - diamantes azul claro */}
+              {evaluationData.length > 0 && (
+                <Scatter
+                  name="Evaluación"
+                  data={evaluationData}
+                  dataKey="y"
+                  fill="#06b6d4"
+                  shape="diamond"
+                />
+              )}
+            </ComposedChart>
+          </ResponsiveContainer>
         </div>
       </div>
-
-      {/* Polynomial Interpolation Graph */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Gráfico del Polinomio Interpolante</CardTitle>
-          <p className="text-sm text-gray-600 mt-2">Puntos de interpolación y polinomio resultante</p>
-          
-          {/* Checkboxes for visibility control */}
-          <div className="flex gap-6 mt-4">
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="show-polynomial"
-                checked={showPolynomial}
-                onCheckedChange={(checked) => setShowPolynomial(checked === true)}
-              />
-              <label htmlFor="show-polynomial" className="text-sm font-medium cursor-pointer">
-                Polinomio P(x)
-              </label>
-            </div>
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="show-points"
-                checked={showInterpolationPoints}
-                onCheckedChange={(checked) => setShowInterpolationPoints(checked === true)}
-              />
-              <label htmlFor="show-points" className="text-sm font-medium cursor-pointer">
-                Puntos de Interpolación
-              </label>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="w-full h-80 rounded-lg border border-border bg-card p-4">
-            <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart margin={{ top: 16, right: 24, left: 16, bottom: 24 }} data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  type="number"
-                  dataKey="x"
-                  domain={[xMin - xPadding, xMax + xPadding]}
-                  tick={{ fontSize: 12 }}
-                  label={{
-                    value: 'x',
-                    position: 'insideBottomRight',
-                    offset: -8,
-                    style: { fontSize: 12 },
-                  }}
-                />
-                <YAxis
-                  type="number"
-                  domain={[yMin - yPadding, yMax + yPadding]}
-                  tick={{ fontSize: 12 }}
-                  label={{
-                    value: 'y',
-                    angle: -90,
-                    position: 'insideLeft',
-                    style: { fontSize: 12 },
-                  }}
-                />
-                <Tooltip
-                  formatter={(value: any) => {
-                    if (typeof value === 'number') {
-                      return value.toFixed(6);
-                    }
-                    return value;
-                  }}
-                  labelStyle={{ color: '#000' }}
-                />
-                <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
-
-                {/* Polinomio interpolado - línea azul */}
-                {showPolynomial && (
-                  <Line
-                    type="monotone"
-                    dataKey="y_poly"
-                    stroke="#3b82f6"
-                    strokeWidth={2}
-                    dot={false}
-                    name="Polinomio P(x)"
-                    isAnimationActive={false}
-                  />
-                )}
-
-                {/* Puntos de interpolación - círculos rojos */}
-                {showInterpolationPoints && (
-                  <Scatter
-                    name="Puntos de Interpolación"
-                    data={interpolationData}
-                    dataKey="y"
-                    fill="#ef4444"
-                    shape="circle"
-                  />
-                )}
-
-                {/* Puntos de evaluación - diamantes azul claro */}
-                {evaluationData.length > 0 && (
-                  <Scatter
-                    name="Evaluación"
-                    data={evaluationData}
-                    dataKey="y"
-                    fill="#06b6d4"
-                    shape="diamond"
-                  />
-                )}
-              </ComposedChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
