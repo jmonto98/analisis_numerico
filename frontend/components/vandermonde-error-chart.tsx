@@ -66,16 +66,36 @@ export function VandermondeErrorChart({
   // Puntos de interpolación con formato compatible
   const interpolationData = training_points.map((p) => ({
     x: p.x,
-    y_poly: p.y,
+    y: p.y,
   }));
 
   // Puntos de evaluación con formato compatible
   const evaluationData = eval_results
     ? eval_results.map((p) => ({
         x: p.x,
-        y_poly: p.y,
+        y: p.y,
       }))
     : [];
+
+  const visibleXValues = [
+    ...(showPolynomial ? chartData.map((p) => p.x) : []),
+    ...(showInterpolationPoints ? interpolationData.map((p) => p.x) : []),
+    ...evaluationData.map((p) => p.x),
+  ];
+
+  const visibleYValues = [
+    ...(showPolynomial ? chartData.map((p) => p.y_poly) : []),
+    ...(showInterpolationPoints ? interpolationData.map((p) => p.y) : []),
+    ...evaluationData.map((p) => p.y),
+  ];
+
+  const xMin = visibleXValues.length ? Math.min(...visibleXValues) : domain.min_x;
+  const xMax = visibleXValues.length ? Math.max(...visibleXValues) : domain.max_x;
+  const xPadding = Math.max((xMax - xMin) * 0.05, 0.5);
+
+  const yMin = visibleYValues.length ? Math.min(...visibleYValues) : 0;
+  const yMax = visibleYValues.length ? Math.max(...visibleYValues) : 1;
+  const yPadding = Math.max((yMax - yMin) * 0.1, 0.5);
 
   return (
     <div className="space-y-6">
@@ -116,7 +136,7 @@ export function VandermondeErrorChart({
               <Checkbox
                 id="show-polynomial"
                 checked={showPolynomial}
-                onCheckedChange={setShowPolynomial}
+                onCheckedChange={(checked) => setShowPolynomial(checked === true)}
               />
               <label htmlFor="show-polynomial" className="text-sm font-medium cursor-pointer">
                 Polinomio P(x)
@@ -126,7 +146,7 @@ export function VandermondeErrorChart({
               <Checkbox
                 id="show-points"
                 checked={showInterpolationPoints}
-                onCheckedChange={setShowInterpolationPoints}
+                onCheckedChange={(checked) => setShowInterpolationPoints(checked === true)}
               />
               <label htmlFor="show-points" className="text-sm font-medium cursor-pointer">
                 Puntos de Interpolación
@@ -142,6 +162,7 @@ export function VandermondeErrorChart({
                 <XAxis
                   type="number"
                   dataKey="x"
+                  domain={[xMin - xPadding, xMax + xPadding]}
                   tick={{ fontSize: 12 }}
                   label={{
                     value: 'x',
@@ -151,6 +172,8 @@ export function VandermondeErrorChart({
                   }}
                 />
                 <YAxis
+                  type="number"
+                  domain={[yMin - yPadding, yMax + yPadding]}
                   tick={{ fontSize: 12 }}
                   label={{
                     value: 'y',
@@ -188,6 +211,7 @@ export function VandermondeErrorChart({
                   <Scatter
                     name="Puntos de Interpolación"
                     data={interpolationData}
+                    dataKey="y"
                     fill="#ef4444"
                     shape="circle"
                   />
@@ -198,6 +222,7 @@ export function VandermondeErrorChart({
                   <Scatter
                     name="Evaluación"
                     data={evaluationData}
+                    dataKey="y"
                     fill="#06b6d4"
                     shape="diamond"
                   />
