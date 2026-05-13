@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { ScatterChart, Scatter, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface VandermondePoint {
   x: number;
@@ -27,6 +29,9 @@ export function VandermondeErrorChart({
   error_30,
   eval_results,
 }: VandermondePolynomialChartProps) {
+  const [showPolynomial, setShowPolynomial] = useState(true);
+  const [showInterpolationPoints, setShowInterpolationPoints] = useState(true);
+
   // Evalúa el polinomio en un punto
   const evaluatePolynomial = (x: number): number => {
     let result = 0;
@@ -104,6 +109,30 @@ export function VandermondeErrorChart({
         <CardHeader>
           <CardTitle>Gráfico del Polinomio Interpolante</CardTitle>
           <p className="text-sm text-gray-600 mt-2">Puntos de interpolación y polinomio resultante</p>
+          
+          {/* Checkboxes for visibility control */}
+          <div className="flex gap-6 mt-4">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="show-polynomial"
+                checked={showPolynomial}
+                onCheckedChange={setShowPolynomial}
+              />
+              <label htmlFor="show-polynomial" className="text-sm font-medium cursor-pointer">
+                Polinomio P(x)
+              </label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="show-points"
+                checked={showInterpolationPoints}
+                onCheckedChange={setShowInterpolationPoints}
+              />
+              <label htmlFor="show-points" className="text-sm font-medium cursor-pointer">
+                Puntos de Interpolación
+              </label>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="w-full h-80 rounded-lg border border-border bg-card p-4">
@@ -142,23 +171,27 @@ export function VandermondeErrorChart({
                 <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
 
                 {/* Polinomio interpolado - línea azul */}
-                <Line
-                  type="monotone"
-                  dataKey="y_poly"
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                  dot={false}
-                  name="Polinomio P(x)"
-                  isAnimationActive={false}
-                />
+                {showPolynomial && (
+                  <Line
+                    type="monotone"
+                    dataKey="y_poly"
+                    stroke="#3b82f6"
+                    strokeWidth={2}
+                    dot={false}
+                    name="Polinomio P(x)"
+                    isAnimationActive={false}
+                  />
+                )}
 
                 {/* Puntos de interpolación - círculos rojos */}
-                <Scatter
-                  name="Puntos de Interpolación"
-                  data={interpolationData}
-                  fill="#ef4444"
-                  shape="circle"
-                />
+                {showInterpolationPoints && (
+                  <Scatter
+                    name="Puntos de Interpolación"
+                    data={interpolationData}
+                    fill="#ef4444"
+                    shape="circle"
+                  />
+                )}
 
                 {/* Puntos de evaluación - diamantes azul claro */}
                 {evaluationData.length > 0 && (
