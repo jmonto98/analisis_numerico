@@ -1,119 +1,179 @@
 'use client';
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { ScatterChart, Scatter, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ComposedChart } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-interface VandermondeErrorChartProps {
+interface VandermondePoint {
+  x: number;
+  y: number;
+}
+
+interface VandermondePolynomialChartProps {
+  training_points: VandermondePoint[];
+  coefficients: number[];
+  domain: { min_x: number; max_x: number };
   error_10: number;
   error_20: number;
   error_30: number;
+  eval_results?: Array<{ x: number; y: number }> | null;
 }
 
-export function VandermondeErrorChart({ error_10, error_20, error_30 }: VandermondeErrorChartProps) {
-  const data = [
-    {
-      percentage: '10%',
-      error: error_10,
-      name: 'E₁₀',
-    },
-    {
-      percentage: '20%',
-      error: error_20,
-      name: 'E₂₀',
-    },
-    {
-      percentage: '30%',
-      error: error_30,
-      name: 'E₃₀',
-    },
-  ];
+export function VandermondeErrorChart({
+  training_points,
+  coefficients,
+  domain,
+  error_10,
+  error_20,
+  error_30,
+  eval_results,
+}: VandermondePolynomialChartProps) {
+  // Evalúa el polinomio en un punto
+  const evaluatePolynomial = (x: number): number => {
+    let result = 0;
+    // Coeficientes en orden ascendente: a0 + a1*x + a2*x^2 + ...
+    for (let i = 0; i < coefficients.length; i++) {
+      result += coefficients[i] * Math.pow(x, i);
+    }
+    return result;
+  };
+
+  // Genera puntos densos para graficar el polinomio
+  const generatePolynomialCurve = () => {
+    const points = [];
+    const step = (domain.max_x - domain.min_x) / 100;
+    for (let x = domain.min_x; x <= domain.max_x; x += step) {
+      points.push({
+        x: parseFloat(x.toFixed(4)),
+        y_poly: parseFloat(evaluatePolynomial(x).toFixed(6)),
+      });
+    }
+    return points;
+  };
+
+  const polyPoints = generatePolynomialCurve();
+
+  // Prepara datos para el gráfico combinado
+  const chartData = polyPoints.map((p) => ({
+    x: p.x,
+    y_poly: p.y_poly,
+  }));
+
+  // Puntos de interpolación con formato compatible
+  const interpolationData = training_points.map((p) => ({
+    x: p.x,
+    y_poly: p.y,
+  }));
+
+  // Puntos de evaluación con formato compatible
+  const evaluationData = eval_results
+    ? eval_results.map((p) => ({
+        x: p.x,
+        y_poly: p.y,
+      }))
+    : [];
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Errores de Validación (RMSE)</CardTitle>
-        <p className="text-sm text-gray-600 mt-2">
-          Error cuadrático medio raíz para diferentes porcentajes de validación
-        </p>
-      </CardHeader>
-      <CardContent>
-        <div className="w-full h-80 rounded-lg border border-border bg-card p-4">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ top: 40, right: 24, left: 16, bottom: 24 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <Legend
-                verticalAlign="top"
-                align="center"
-                wrapperStyle={{ fontSize: 12, paddingBottom: 8 }}
-                iconSize={10}
-              />
-              <XAxis
-                dataKey="name"
-                tick={{ fontSize: 12 }}
-                label={{
-                  value: 'Porcentaje de Validación',
-                  position: 'bottom',
-                  offset: 0,
-                  style: { fontSize: 12 },
-                }}
-              />
-              <YAxis
-                scale="log"
-                tick={{ fontSize: 12 }}
-                label={{
-                  value: 'RMSE (escala log)',
-                  angle: -90,
-                  position: 'insideLeft',
-                  style: { fontSize: 12 },
-                }}
-              />
-              <Tooltip
-                formatter={(value: any) => {
-                  if (typeof value === 'number') {
-                    return value.toExponential(6);
-                  }
-                  return value;
-                }}
-                labelStyle={{ color: '#000' }}
-              />
-              <Line
-                type="monotone"
-                dataKey="error"
-                stroke="#3b82f6"
-                strokeWidth={2}
-                dot={{ fill: '#3b82f6', r: 6 }}
-                activeDot={{ r: 8 }}
-                name="RMSE"
-              />
-            </LineChart>
-          </ResponsiveContainer>
+    <div className="space-y-6">
+      {/* Error Cards */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="text-xs text-gray-600 font-semibold uppercase">E₁₀</div>
+          <div className="text-sm font-mono font-bold text-blue-700 mt-1">
+            {error_10.toExponential(4)}
+          </div>
+          <div className="text-xs text-gray-500 mt-1">10% validación</div>
         </div>
+        <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+          <div className="text-xs text-gray-600 font-semibold uppercase">E₂₀</div>
+          <div className="text-sm font-mono font-bold text-green-700 mt-1">
+            {error_20.toExponential(4)}
+          </div>
+          <div className="text-xs text-gray-500 mt-1">20% validación</div>
+        </div>
+        <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
+          <div className="text-xs text-gray-600 font-semibold uppercase">E₃₀</div>
+          <div className="text-sm font-mono font-bold text-orange-700 mt-1">
+            {error_30.toExponential(4)}
+          </div>
+          <div className="text-xs text-gray-500 mt-1">30% validación</div>
+        </div>
+      </div>
 
-        {/* Summary cards */}
-        <div className="grid grid-cols-3 gap-4 mt-6">
-          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="text-xs text-gray-600 font-semibold uppercase">E₁₀</div>
-            <div className="text-sm font-mono font-bold text-blue-700 mt-1">
-              {error_10.toExponential(4)}
-            </div>
-            <div className="text-xs text-gray-500 mt-1">10% validación</div>
+      {/* Polynomial Interpolation Graph */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Gráfico del Polinomio Interpolante</CardTitle>
+          <p className="text-sm text-gray-600 mt-2">Puntos de interpolación y polinomio resultante</p>
+        </CardHeader>
+        <CardContent>
+          <div className="w-full h-80 rounded-lg border border-border bg-card p-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart margin={{ top: 16, right: 24, left: 16, bottom: 24 }} data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  type="number"
+                  dataKey="x"
+                  tick={{ fontSize: 12 }}
+                  label={{
+                    value: 'x',
+                    position: 'insideBottomRight',
+                    offset: -8,
+                    style: { fontSize: 12 },
+                  }}
+                />
+                <YAxis
+                  tick={{ fontSize: 12 }}
+                  label={{
+                    value: 'y',
+                    angle: -90,
+                    position: 'insideLeft',
+                    style: { fontSize: 12 },
+                  }}
+                />
+                <Tooltip
+                  formatter={(value: any) => {
+                    if (typeof value === 'number') {
+                      return value.toFixed(6);
+                    }
+                    return value;
+                  }}
+                  labelStyle={{ color: '#000' }}
+                />
+                <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
+
+                {/* Polinomio interpolado - línea azul */}
+                <Line
+                  type="monotone"
+                  dataKey="y_poly"
+                  stroke="#3b82f6"
+                  strokeWidth={2}
+                  dot={false}
+                  name="Polinomio P(x)"
+                  isAnimationActive={false}
+                />
+
+                {/* Puntos de interpolación - círculos rojos */}
+                <Scatter
+                  name="Puntos de Interpolación"
+                  data={interpolationData}
+                  fill="#ef4444"
+                  shape="circle"
+                />
+
+                {/* Puntos de evaluación - diamantes azul claro */}
+                {evaluationData.length > 0 && (
+                  <Scatter
+                    name="Evaluación"
+                    data={evaluationData}
+                    fill="#06b6d4"
+                    shape="diamond"
+                  />
+                )}
+              </ComposedChart>
+            </ResponsiveContainer>
           </div>
-          <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-            <div className="text-xs text-gray-600 font-semibold uppercase">E₂₀</div>
-            <div className="text-sm font-mono font-bold text-green-700 mt-1">
-              {error_20.toExponential(4)}
-            </div>
-            <div className="text-xs text-gray-500 mt-1">20% validación</div>
-          </div>
-          <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
-            <div className="text-xs text-gray-600 font-semibold uppercase">E₃₀</div>
-            <div className="text-sm font-mono font-bold text-orange-700 mt-1">
-              {error_30.toExponential(4)}
-            </div>
-            <div className="text-xs text-gray-500 mt-1">30% validación</div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

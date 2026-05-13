@@ -183,11 +183,42 @@ export function VandermondeCalculator() {
             <AlertDescription className="text-green-800">{results.message}</AlertDescription>
           </Alert>
 
-          {/* Error Chart */}
+          {/* Resultado Card */}
+          <Card className="border-teal-200 bg-teal-50">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-green-700">Resultado</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <p className="text-xs text-teal-700 uppercase tracking-wide font-semibold">Grado Polinomial</p>
+                  <p className="text-lg font-bold text-teal-900">{results.polynomial_degree}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-teal-700 uppercase tracking-wide font-semibold">Puntos de Entrada</p>
+                  <p className="text-lg font-bold text-teal-900">{results.training_points.length}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-teal-700 uppercase tracking-wide font-semibold">Dominio (Mín)</p>
+                  <p className="text-lg font-bold text-teal-900">{results.domain.min_x.toFixed(3)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-teal-700 uppercase tracking-wide font-semibold">Dominio (Máx)</p>
+                  <p className="text-lg font-bold text-teal-900">{results.domain.max_x.toFixed(3)}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Error Chart / Polynomial Graph */}
           <VandermondeErrorChart
+            training_points={results.training_points}
+            coefficients={results.coefficients}
+            domain={results.domain}
             error_10={results.error_10}
             error_20={results.error_20}
             error_30={results.error_30}
+            eval_results={results.eval_results}
           />
 
           {/* Results Display */}
@@ -196,32 +227,8 @@ export function VandermondeCalculator() {
             coefficients={results.coefficients}
             matrix_A={results.matrix_A}
             polynomial_degree={results.polynomial_degree}
+            training_points={results.training_points}
           />
-
-          {/* Domain Info */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Información Adicional</CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="text-xs text-gray-600">Dominio (Mínimo)</Label>
-                <div className="text-lg font-mono font-bold">{results.domain.min_x.toFixed(4)}</div>
-              </div>
-              <div>
-                <Label className="text-xs text-gray-600">Dominio (Máximo)</Label>
-                <div className="text-lg font-mono font-bold">{results.domain.max_x.toFixed(4)}</div>
-              </div>
-              <div>
-                <Label className="text-xs text-gray-600">Puntos de Entrenamiento</Label>
-                <div className="text-lg font-mono font-bold">{results.validation_metrics.num_train}</div>
-              </div>
-              <div>
-                <Label className="text-xs text-gray-600">Puntos de Validación</Label>
-                <div className="text-lg font-mono font-bold">{results.validation_metrics.num_validation}</div>
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Eval Results */}
           {results.eval_results && results.eval_results.length > 0 && (
