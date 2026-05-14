@@ -3,44 +3,7 @@ from typing import List, Tuple
 from .schemas import VandermondePoint, VandermondeValidationMetrics
 
 
-def calculate_rmse_for_percentage(
-    x_train_arr: np.ndarray,
-    y_train_arr: np.ndarray,
-    coefficients: np.ndarray,
-    validation_percentage: float
-) -> float:
-    """
-    Calculate RMSE for a specific validation percentage.
-    
-    Args:
-        x_train_arr: Training x values (numpy array)
-        y_train_arr: Training y values (numpy array)
-        coefficients: Polynomial coefficients
-        validation_percentage: Percentage for validation (10, 20, 30)
-        
-    Returns:
-        RMSE value
-    """
-    if validation_percentage == 0:
-        return 0.0
-    
-    # Split for this specific percentage
-    np.random.seed(42)
-    n = len(x_train_arr)
-    num_validation = max(1, int(n * validation_percentage / 100))
-    
-    indices = np.random.permutation(n)
-    val_indices = indices[:num_validation]
-    
-    x_val = x_train_arr[val_indices]
-    y_val = y_train_arr[val_indices]
-    
-    n_train = len(x_train_arr)
-    A_val = np.vander(x_val, N=n_train, increasing=False)
-    y_pred_val = A_val @ coefficients
-    
-    rmse = np.sqrt(np.mean((y_val - y_pred_val) ** 2))
-    return float(rmse)
+
 
 
 def format_polynomial(coefficients: np.ndarray) -> str:
@@ -155,35 +118,42 @@ def split_data(
 def vandermonde_interpolation(
     x: List[float],
     y: List[float],
-    validation_percentage: float = 20,
-    eval_points: List[float] = None,
-) -> Tuple[List[float], str, List[List[float]], dict, List[VandermondePoint], List[VandermondePoint], VandermondeValidationMetrics, List[dict], float, float, float]:
+    validation_percentage: float = 0,
+    validation_x: List[float] = None,
+    validation_y: List[float] = None,
+) -> Tuple[List[float], str, List[List[float]], dict, List[VandermondePoint], List[VandermondePoint], VandermondeValidationMetrics, List[dict]]:
     """
-    Perform Vandermonde polynomial interpolation with train/validation split.
+    Perform Vandermonde polynomial interpolation with training and validation data.
     
     Args:
-        x: List of x values
-        y: List of y values
-        validation_percentage: Percentage of data for validation (0, 10, 20, 30). If 0, all points used for training.
-        eval_points: Optional points where to evaluate the polynomial
+        x: List of x values for training
+        y: List of y values for training
+        validation_percentage: Percentage of data reserved for validation (informational)
+        validation_x: Optional x values for validation
+        validation_y: Optional y values for validation
         
     Returns:
-        Tuple of (coefficients, polynomial_str, matrix_A, domain, training_points, validation_points, metrics, eval_results, error_10, error_20, error_30)
+        Tuple of (coefficients, polynomial_str, matrix_A, domain, training_points, validation_points, metrics, validation_results)
     """
     if len(x) < 2:
-        raise ValueError("Need at least 2 points")
+        raise ValueError("Need at least 2 points for training")
     
     if len(x) != len(y):
         raise ValueError("x and y must have same length")
     
-    # Split data
-    x_train, y_train, x_val, y_val = split_data(x, y, validation_percentage)
+    # Convert input to numpy arrays
+    x_train_arr = np.array(x, dtype=float)
+    y_train_arr = np.array(y, dtype=float)
     
-    # Convert to numpy arrays
-    x_train_arr = np.array(x_train, dtype=float)
-    y_train_arr = np.array(y_train, dtype=float)
-    x_val_arr = np.array(x_val, dtype=float)
-    y_val_arr = np.array(y_val, dtype=float)
+    # Handle validation data if provided
+    if validation_x is not None and validation_y is not None:
+        if len(validation_x) != len(validation_y):
+            raise ValueError("validation_x and validation_y must have same length")
+        x_val_arr = np.array(validation_x, dtype=float)
+        y_val_arr = np.array(validation_y, dtype=float)
+    else:
+        x_val_arr = np.array([], dtype=float)
+        y_val_arr = np.array([], dtype=float)
     
     n_train = len(x_train_arr)
     
@@ -240,31 +210,31 @@ def vandermonde_interpolation(
     
     # Create training points objects
     training_points = [
-        VandermondePoint(x=float(x_train[i]), y=float(y_train[i]))
-        for i in range(len(x_train))
+        VandermondePoint(x=float(x_train_arr[i]), y=float(y_train_arr[i]))
+        for i in range(len(x_train_arr))
     ]
     
     # Create validation points objects
     validation_points = [
-        VandermondePoint(x=float(x_val[i]), y=float(y_val[i]))
-        for i in range(len(x_val))
+        VandermondePoint(x=float(x_val_arr[i]), y=float(y_val_arr[i]))
+        for i in range(len(x_val_arr))
     ]
     
-    # Evaluate on eval_points if provided
-    eval_results = []
-    if eval_points:
-        x_eval_arr = np.array(eval_points, dtype=float)
-        A_eval = np.vander(x_eval_arr, N=n_train, increasing=False)
-        y_eval = A_eval @ coefficients
-        eval_results = [
-            {"x": float(x_eval_arr[i]), "y": float(y_eval[i])}
-            for i in range(len(x_eval_arr))
+    # Evaluate on validation points if provided
+    validation_results = []
+    if len(x_val_arr) > 0:
+        A_val = np.vander(x_val_arr, N=n_train, increasing=False)
+        y_val_pred = A_val @ coefficients
+        
+        validation_results = [
+            {
+                "x": float(x_val_arr[i]), 
+                "y_actual": float(y_val_arr[i]),
+                "y_pred": float(y_val_pred[i]),
+                "error": float(abs(y_val_arr[i] - y_val_pred[i]))
+            }
+            for i in range(len(x_val_arr))
         ]
-    
-    # Calculate errors for 10%, 20%, 30% validation
-    error_10 = calculate_rmse_for_percentage(x_train_arr, y_train_arr, coefficients, 10)
-    error_20 = calculate_rmse_for_percentage(x_train_arr, y_train_arr, coefficients, 20)
-    error_30 = calculate_rmse_for_percentage(x_train_arr, y_train_arr, coefficients, 30)
     
     return (
         coefficients.tolist(),
@@ -274,8 +244,5 @@ def vandermonde_interpolation(
         training_points,
         validation_points,
         metrics,
-        eval_results,
-        error_10,
-        error_20,
-        error_30,
+        validation_results,
     )

@@ -3,10 +3,11 @@ from typing import List, Optional
 
 
 class VandermondeRequest(BaseModel):
-    x: List[float] = Field(..., description="X values of the data points")
-    y: List[float] = Field(..., description="Y values of the data points")
-    validation_percentage: float = Field(default=0, description="Percentage of data for validation (10, 20, or 30)")
-    eval_points: Optional[List[float]] = Field(default=None, description="Points where to evaluate the polynomial")
+    x: List[float] = Field(..., description="X values for training")
+    y: List[float] = Field(..., description="Y values for training")
+    validation_percentage: float = Field(default=0, description="Percentage of data for validation")
+    validation_x: Optional[List[float]] = Field(default=None, description="X values for validation")
+    validation_y: Optional[List[float]] = Field(default=None, description="Y values for validation")
 
 
 class VandermondePoint(BaseModel):
@@ -32,8 +33,5 @@ class VandermondeResponse(BaseModel):
     training_points: List[VandermondePoint]
     validation_points: List[VandermondePoint]
     validation_metrics: VandermondeValidationMetrics
-    error_10: float  # RMSE with 10% validation
-    error_20: float  # RMSE with 20% validation
-    error_30: float  # RMSE with 30% validation
-    eval_results: Optional[List[dict]] = None  # [{"x": float, "y": float}, ...]
+    validation_results: Optional[List[dict]] = None  # [{"x": float, "y_actual": float, "y_pred": float, "error": float}, ...]
     message: str

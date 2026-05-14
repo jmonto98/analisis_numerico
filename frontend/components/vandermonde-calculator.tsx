@@ -16,6 +16,13 @@ interface VandermondePoint {
   y: number;
 }
 
+interface ValidateResult {
+  x: number;
+  y_actual: number;
+  y_pred: number;
+  error: number;
+}
+
 interface VandermondeResponse {
   coefficients: number[];
   polynomial_degree: number;
@@ -32,10 +39,7 @@ interface VandermondeResponse {
     max_error: number;
     mean_error: number;
   };
-  error_10: number;
-  error_20: number;
-  error_30: number;
-  eval_results: Array<{ x: number; y: number }> | null;
+  validation_results: ValidateResult[] | null;
   message: string;
 }
 
@@ -60,7 +64,8 @@ export function VandermondeCalculator() {
     { x: '2', y: '4' },
   ]);
 
-  const [evalPointsStr, setEvalPointsStr] = useState('');
+  const [validationPercentage, setValidationPercentage] = useState(0);
+  const [selectedValidationPoints, setSelectedValidationPoints] = useState<number[]>([]);
   const [results, setResults] = useState<VandermondeResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -77,24 +82,32 @@ export function VandermondeCalculator() {
         return;
       }
 
-      // Parse eval points
-      let evalPoints: number[] = [];
-      if (evalPointsStr.trim()) {
-        evalPoints = evalPointsStr
-          .split(',')
-          .map((x) => parseValue(x.trim()))
-          .filter((x) => !isNaN(x));
-      }
-
-      // Prepare payload
+      // Prepare payload - separate training and validation data
       const x = points.map((p) => parseValue(p.x));
       const y = points.map((p) => parseValue(p.y));
 
+      // Split into training and validation
+      const training_x: number[] = [];
+      const training_y: number[] = [];
+      const validation_x: number[] = [];
+      const validation_y: number[] = [];
+
+      x.forEach((xVal, idx) => {
+        if (selectedValidationPoints.includes(idx)) {
+          validation_x.push(xVal);
+          validation_y.push(y[idx]);
+        } else {
+          training_x.push(xVal);
+          training_y.push(y[idx]);
+        }
+      });
+
       const payload = {
-        x,
-        y,
-        validation_percentage: 0, // Use all points for training by default
-        eval_points: evalPoints.length > 0 ? evalPoints : undefined,
+        x: training_x,
+        y: training_y,
+        validation_percentage: validationPercentage,
+        validation_x: validation_x.length > 0 ? validation_x : undefined,
+        validation_y: validation_y.length > 0 ? validation_y : undefined,
       };
 
       const response = await fetch(`${API_BASE_URL}/vandermonde`, {
@@ -131,29 +144,16 @@ export function VandermondeCalculator() {
         </Card>
 
         {/* Points Input */}
-        <VandermondePointsInput points={points} onPointsChange={setPoints} />
+        <VandermondePointsInput 
+          points={points} 
+          validationPercentage={validationPercentage}
+          selectedValidationPoints={selectedValidationPoints}
+          onPointsChange={setPoints}
+          onValidationPercentageChange={setValidationPercentage}
+          onValidationPointsChange={setSelectedValidationPoints}
+        />
 
-        {/* Optional: Evaluation Points */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Puntos de Evaluación (Opcional)</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div>
-              <Label className="text-sm">Puntos donde evaluar el polinomio (separados por comas)</Label>
-              <Input
-                type="text"
-                value={evalPointsStr}
-                onChange={(e) => setEvalPointsStr(e.target.value)}
-                placeholder="Ej: -1, 0, 0.5, 2.5, 5"
-                className="mt-2"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Puedes usar fracciones (1/2), decimales (1.5) o notación científica (1e-4)
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Optional: Evaluation Points - REMOVED - Now using validate_points from selected indices */}
 
         {/* Calculate Button */}
         <Button onClick={handleCalculate} disabled={isLoading} size="lg" className="w-full">
@@ -182,10 +182,10 @@ export function VandermondeCalculator() {
             <AlertDescription className="text-green-800">{results.message}</AlertDescription>
           </Alert>
 
-          {/* Resultado Card and Error Cards in same row */}
-          <div className="grid grid-cols-1 lg:grid-cols-6 gap-4">
+          {/* Resultado Card and Validation Metrics */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
             {/* Resultado Card */}
-            <Card className="bg-primary/10 border border-primary/30 lg:col-span-3">
+            <Card className="bg-primary/10 border border-primary/30 lg:col-span-2">
               <CardHeader className="pb-3">
                 <CardTitle className="text-primary text-sm">Resultado</CardTitle>
               </CardHeader>
@@ -195,51 +195,75 @@ export function VandermondeCalculator() {
                   <span className="text-lg font-mono font-semibold text-foreground">{results.polynomial_degree}</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Puntos</span>
-                  <span className="text-lg font-mono font-semibold text-foreground">{results.training_points.length}</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Entrenamiento</span>
+                  <span className="text-lg font-mono font-semibold text-foreground">{results.validation_metrics.num_train}</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Mín</span>
-                  <span className="text-lg font-mono font-semibold text-foreground">{results.domain.min_x.toFixed(3)}</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Validación</span>
+                  <span className="text-lg font-mono font-semibold text-foreground">{results.validation_metrics.num_validation}</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Máx</span>
-                  <span className="text-lg font-mono font-semibold text-foreground">{results.domain.max_x.toFixed(3)}</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide">% Validación</span>
+                  <span className="text-lg font-mono font-semibold text-foreground">{results.validation_metrics.validation_percentage}%</span>
                 </div>
               </CardContent>
             </Card>
             
-            {/* Error Cards */}
-            <Card className="bg-primary/10 border border-primary/30 lg:col-span-1">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-primary">E₁₀</CardTitle>
+            {/* Validation Metrics Card */}
+            <Card className="bg-primary/10 border border-primary/30 lg:col-span-2">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-primary text-sm">Métricas de Validación</CardTitle>
               </CardHeader>
-              <CardContent className="p-3 space-y-2">
-                <div className="text-lg font-mono font-semibold text-foreground">{results.error_10.toExponential(4)}</div>
-                <p className="text-[11px] text-muted-foreground">10% validación</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-primary/10 border border-primary/30 lg:col-span-1">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-primary">E₂₀</CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 space-y-2">
-                <div className="text-lg font-mono font-semibold text-foreground">{results.error_20.toExponential(4)}</div>
-                <p className="text-[11px] text-muted-foreground">20% validación</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-primary/10 border border-primary/30 lg:col-span-1">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-primary">E₃₀</CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 space-y-2">
-                <div className="text-lg font-mono font-semibold text-foreground">{results.error_30.toExponential(4)}</div>
-                <p className="text-[11px] text-muted-foreground">30% validación</p>
+              <CardContent className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col">
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide">RMSE</span>
+                  <span className="text-lg font-mono font-semibold text-foreground">{results.validation_metrics.rmse.toExponential(2)}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Max Error</span>
+                  <span className="text-lg font-mono font-semibold text-foreground">{results.validation_metrics.max_error.toExponential(2)}</span>
+                </div>
+                <div className="flex flex-col col-span-2">
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Mean Error</span>
+                  <span className="text-lg font-mono font-semibold text-foreground">{results.validation_metrics.mean_error.toExponential(2)}</span>
+                </div>
               </CardContent>
             </Card>
           </div>
+
+          {/* Validation Results Table - if validation_results exists */}
+          {results.validation_results && results.validation_results.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Resultados de Validación</CardTitle>
+                <p className="text-xs text-muted-foreground mt-1">Comparación de valores reales vs predichos</p>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-2 px-3 font-semibold text-muted-foreground">x</th>
+                        <th className="text-left py-2 px-3 font-semibold text-muted-foreground">y_actual</th>
+                        <th className="text-left py-2 px-3 font-semibold text-muted-foreground">y_pred</th>
+                        <th className="text-left py-2 px-3 font-semibold text-muted-foreground">Error</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {results.validation_results.map((result, idx) => (
+                        <tr key={idx} className="border-b border-border/50">
+                          <td className="py-2 px-3 font-mono">{result.x.toFixed(4)}</td>
+                          <td className="py-2 px-3 font-mono">{result.y_actual.toFixed(4)}</td>
+                          <td className="py-2 px-3 font-mono">{result.y_pred.toFixed(4)}</td>
+                          <td className="py-2 px-3 font-mono text-red-600">{result.error.toExponential(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Graph Card */}
           <div className="space-y-6">
@@ -253,10 +277,6 @@ export function VandermondeCalculator() {
                   training_points={results.training_points}
                   coefficients={results.coefficients}
                   domain={results.domain}
-                  error_10={results.error_10}
-                  error_20={results.error_20}
-                  error_30={results.error_30}
-                  eval_results={results.eval_results}
                 />
               </CardContent>
             </Card>
@@ -359,37 +379,6 @@ export function VandermondeCalculator() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Eval Results */}
-          {results.eval_results && results.eval_results.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Evaluación en Puntos Solicitados</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr className="bg-gray-100">
-                        <th className="border px-4 py-2 text-left text-sm font-semibold">x</th>
-                        <th className="border px-4 py-2 text-right text-sm font-semibold">P(x)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {results.eval_results.map((point, idx) => (
-                        <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                          <td className="border px-4 py-2 font-mono text-sm">{point.x.toFixed(6)}</td>
-                          <td className="border px-4 py-2 font-mono text-sm text-right">
-                            {point.y.toExponential(6)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
       )}
     </div>

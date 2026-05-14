@@ -13,20 +13,12 @@ interface VandermondePolynomialChartProps {
   training_points: VandermondePoint[];
   coefficients: number[];
   domain: { min_x: number; max_x: number };
-  error_10: number;
-  error_20: number;
-  error_30: number;
-  eval_results?: Array<{ x: number; y: number }> | null;
 }
 
 export function VandermondeErrorChart({
   training_points,
   coefficients,
   domain,
-  error_10,
-  error_20,
-  error_30,
-  eval_results,
 }: VandermondePolynomialChartProps) {
   const [showPolynomial, setShowPolynomial] = useState(true);
   const [showInterpolationPoints, setShowInterpolationPoints] = useState(true);
@@ -68,24 +60,14 @@ export function VandermondeErrorChart({
     y: p.y,
   }));
 
-  // Puntos de evaluación con formato compatible
-  const evaluationData = eval_results
-    ? eval_results.map((p) => ({
-        x: p.x,
-        y: p.y,
-      }))
-    : [];
-
   const visibleXValues = [
     ...(showPolynomial ? chartData.map((p) => p.x) : []),
     ...(showInterpolationPoints ? interpolationData.map((p) => p.x) : []),
-    ...evaluationData.map((p) => p.x),
   ];
 
   const visibleYValues = [
     ...(showPolynomial ? chartData.map((p) => p.y_poly) : []),
     ...(showInterpolationPoints ? interpolationData.map((p) => p.y) : []),
-    ...evaluationData.map((p) => p.y),
   ];
 
   const xMin = visibleXValues.length ? Math.min(...visibleXValues) : domain.min_x;
@@ -182,17 +164,6 @@ export function VandermondeErrorChart({
                   dataKey="y"
                   fill="#ef4444"
                   shape="circle"
-                />
-              )}
-
-              {/* Puntos de evaluación - diamantes azul claro */}
-              {evaluationData.length > 0 && (
-                <Scatter
-                  name="Evaluación"
-                  data={evaluationData}
-                  dataKey="y"
-                  fill="#06b6d4"
-                  shape="diamond"
                 />
               )}
             </ComposedChart>
