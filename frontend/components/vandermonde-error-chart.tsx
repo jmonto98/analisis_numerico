@@ -11,17 +11,20 @@ interface VandermondePoint {
 
 interface VandermondePolynomialChartProps {
   training_points: VandermondePoint[];
+  validation_points?: VandermondePoint[];
   coefficients: number[];
   domain: { min_x: number; max_x: number };
 }
 
 export function VandermondeErrorChart({
   training_points,
+  validation_points,
   coefficients,
   domain,
 }: VandermondePolynomialChartProps) {
   const [showPolynomial, setShowPolynomial] = useState(true);
   const [showInterpolationPoints, setShowInterpolationPoints] = useState(true);
+  const [showValidationPoints, setShowValidationPoints] = useState(true);
 
   // Evalúa el polinomio en un punto
   const evaluatePolynomial = (x: number): number => {
@@ -60,14 +63,24 @@ export function VandermondeErrorChart({
     y: p.y,
   }));
 
+  // Puntos de validación con formato compatible
+  const validationData = validation_points
+    ? validation_points.map((p) => ({
+        x: p.x,
+        y: p.y,
+      }))
+    : [];
+
   const visibleXValues = [
     ...(showPolynomial ? chartData.map((p) => p.x) : []),
     ...(showInterpolationPoints ? interpolationData.map((p) => p.x) : []),
+    ...(showValidationPoints ? validationData.map((p) => p.x) : []),
   ];
 
   const visibleYValues = [
     ...(showPolynomial ? chartData.map((p) => p.y_poly) : []),
     ...(showInterpolationPoints ? interpolationData.map((p) => p.y) : []),
+    ...(showValidationPoints ? validationData.map((p) => p.y) : []),
   ];
 
   const xMin = visibleXValues.length ? Math.min(...visibleXValues) : domain.min_x;
@@ -104,6 +117,18 @@ export function VandermondeErrorChart({
               Puntos de Interpolación
             </label>
           </div>
+          {validation_points && validation_points.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="show-validation-points"
+                checked={showValidationPoints}
+                onCheckedChange={(checked) => setShowValidationPoints(checked === true)}
+              />
+              <label htmlFor="show-validation-points" className="text-sm font-medium cursor-pointer">
+                Puntos de Validación
+              </label>
+            </div>
+          )}
         </div>
         <div className="w-full h-80 rounded-lg border border-border bg-card p-4">
           <ResponsiveContainer width="100%" height="100%">
@@ -164,6 +189,17 @@ export function VandermondeErrorChart({
                   dataKey="y"
                   fill="#ef4444"
                   shape="circle"
+                />
+              )}
+
+              {/* Puntos de validación - diamantes verde */}
+              {showValidationPoints && validationData.length > 0 && (
+                <Scatter
+                  name="Puntos de Validación"
+                  data={validationData}
+                  dataKey="y"
+                  fill="#10b981"
+                  shape="diamond"
                 />
               )}
             </ComposedChart>

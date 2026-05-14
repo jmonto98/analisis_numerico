@@ -275,6 +275,11 @@ export function VandermondeCalculator() {
               <CardContent>
                 <VandermondeErrorChart
                   training_points={results.training_points}
+                  validation_points={
+                    results.validation_results
+                      ? results.validation_results.map((r) => ({ x: r.x, y: r.y_actual }))
+                      : undefined
+                  }
                   coefficients={results.coefficients}
                   domain={results.domain}
                 />
