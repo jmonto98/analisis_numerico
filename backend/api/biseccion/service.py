@@ -119,8 +119,11 @@ def biseccion(biseccion: BiseccionRequest) -> dict:
         return result
 
     if fi * fs > 0:
-        result.update(message="El intervalo es inadecuado para el método de bisección.")
-        return result
+        raise ValueError(
+            f"El intervalo es inadecuado para el método de bisección. "
+            f"f({biseccion.xi}) = {fi} y f({biseccion.xs}) = {fs} tienen el mismo signo. "
+            f"Se requiere cambio de signo para aplicar bisección."
+        )
 
     xm = (biseccion.xi + biseccion.xs) / 2.0
 
