@@ -59,9 +59,9 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <ul className="space-y-2 text-sm mb-4">              
-                <li>○ Gauss-Seidel</li>
-                <li>○ Jacobi</li>
-                <li>○ SOR </li>
+                <li>✓ Gauss-Seidel</li>
+                <li>✓ Jacobi</li>
+                <li>✓ SOR </li>
               </ul>
               <Link href="/methods/sistemas-lineales">
                 <Button variant="outline" className="w-full">
@@ -81,9 +81,9 @@ export default function Home() {
             <CardContent>
               <ul className="space-y-2 text-sm mb-4">
                 <li>✓ Vandermonde</li>
-                <li>○ Lagrange</li>
-                <li>○ Newton Interpolante</li>
-                <li>○ Splines</li>
+                <li>✓ Lagrange</li>
+                <li>✓ Newton Interpolante</li>
+                <li>✓ Splines</li>
               </ul>
               <Link href="/methods/interpolacion">
                 <Button variant="outline" className="w-full">
