@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 
 const methods = [
   { id: 'vandermonde', label: 'Vandermonde' },
+  { id: 'lagrange', label: 'Lagrange' },
 ];
 
 export default function InterpolacionLayout({
