@@ -11,6 +11,7 @@ from api.jacobi.routes import router as jacobi_router
 from api.gauss_seidel.routes import router as gauss_seidel_router
 from api.sor.routes import router as sor_router
 from api.vandermonde.routes import router as vandermonde_router
+from api.lagrange.routes import lagrange_router
 
 app = FastAPI(
     title="API Análisis Numérico",
@@ -28,6 +29,7 @@ app.include_router(jacobi_router)
 app.include_router(gauss_seidel_router)
 app.include_router(sor_router)
 app.include_router(vandermonde_router)
+app.include_router(lagrange_router)
 
 app.add_middleware(
     CORSMiddleware,
