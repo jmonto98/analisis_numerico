@@ -127,6 +127,10 @@ def lagrange_interpolation(
     # Initialize with zero polynomial
     P = np.array([0.0])
     
+    # Store matrix L (coefficients of each Lagrange basis polynomial)
+    # Each row will be the coefficients of Li(x) / denominator
+    matrix_L = []
+    
     for i in range(n_train):
         # Build Li(x) = ∏(j≠i) (x - xj)/(xi - xj)
         Li = np.array([1.0])  # Start with polynomial 1
@@ -139,15 +143,21 @@ def lagrange_interpolation(
                 Li = np.convolve(Li, np.array([1.0, -x_train_arr[j]]))
                 denominator *= (x_train_arr[i] - x_train_arr[j])
         
-        # Scale by y(i) / denominator
-        Li = y_train_arr[i] * Li / denominator
+        # Normalize Li by denominator (but NOT by y(i) - that comes later)
+        Li_normalized = Li / denominator
+        
+        # Store coefficients in the matrix L (descending order already from convolve)
+        matrix_L.append(Li_normalized.tolist())
+        
+        # Scale by y(i) for the polynomial sum
+        Li_scaled = y_train_arr[i] * Li_normalized
         
         # Add to P
         # Pad polynomials to same length before adding
-        max_len = max(len(P), len(Li))
+        max_len = max(len(P), len(Li_scaled))
         P_padded = np.pad(P, (max_len - len(P), 0), mode='constant')
-        Li_padded = np.pad(Li, (max_len - len(Li), 0), mode='constant')
-        P = P_padded + Li_padded
+        Li_scaled_padded = np.pad(Li_scaled, (max_len - len(Li_scaled), 0), mode='constant')
+        P = P_padded + Li_scaled_padded
     
     # Clean up the polynomial (remove very small coefficients)
     P = np.where(np.abs(P) < 1e-10, 0, P)
@@ -214,10 +224,22 @@ def lagrange_interpolation(
         mean_error=mean_error,
     )
     
+    # Convert matrix_L to rectangular form (pad all rows to same length)
+    # Each row contains coefficients of Li(x)/denominator in descending order
+    max_degree = max(len(row) for row in matrix_L)
+    matrix_A = []
+    for row in matrix_L:
+        # Pad row to max_degree by adding zeros at the end (lowest powers)
+        padded_row = row + [0.0] * (max_degree - len(row))
+        matrix_A.append(padded_row)
+    
     return {
         "coefficients": P.tolist(),
         "polynomial_degree": poly_degree,
         "polynomial_str": polynomial_str,
+        "matrix_A": matrix_A,
+        "vector_x": x_train_arr.tolist(),
+        "vector_b": y_train_arr.tolist(),
         "domain": domain,
         "training_points": training_points,
         "validation_points": validation_points,

@@ -25,9 +25,12 @@ class LagrangeValidationMetrics(BaseModel):
 
 
 class LagrangeResponse(BaseModel):
-    coefficients: List[float]  # Polynomial coefficients [a0, a1, a2, ...]
+    coefficients: List[float]  # Polynomial coefficients in descending order of powers [an, an-1, ..., a1, a0]
     polynomial_degree: int
     polynomial_str: str  # String representation: "P(x) = 0.5x² + 2x + 1"
+    matrix_A: List[List[float]]  # Matrix of Lagrange basis polynomial coefficients (each row is Li(x)/denominator)
+    vector_x: List[float]  # Training x points
+    vector_b: List[float]  # Training y points (denominación 'b' para consistencia con Ax=b)
     domain: dict  # {"min_x": float, "max_x": float}
     training_points: List[LagrangePoint]
     validation_points: List[LagrangePoint]

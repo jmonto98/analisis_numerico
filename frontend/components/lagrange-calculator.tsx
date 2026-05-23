@@ -27,6 +27,9 @@ interface LagrangeResponse {
   coefficients: number[];
   polynomial_degree: number;
   polynomial_str: string;
+  matrix_A: number[][];
+  vector_x: number[];
+  vector_b: number[];
   domain: { min_x: number; max_x: number };
   training_points: LagrangePoint[];
   validation_points: LagrangePoint[];
@@ -299,18 +302,90 @@ export function LagrangeCalculator() {
               <Card className="bg-primary/10 border border-primary/30">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base text-primary">Coeficientes</CardTitle>
+                  <p className="text-xs text-muted-foreground mt-1">aₙxⁿ + aₙ₋₁xⁿ⁻¹ + ... + a₁x + a₀</p>
                 </CardHeader>
-                <CardContent className="space-y-2 max-h-28 overflow-y-auto">
-                  {results.coefficients.map((coef, idx) => (
-                    <div key={idx} className="flex justify-between text-xs font-mono">
-                      <span className="text-muted-foreground">a_{results.coefficients.length - 1 - idx}</span>
-                      <span className="font-semibold">{coef.toExponential(6)}</span>
-                    </div>
-                  ))}
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                    {results.coefficients.map((coeff, i) => {
+                      const power = results.polynomial_degree - i;
+                      return (
+                        <div key={i} className="bg-muted/50 p-2 rounded flex justify-between items-center">
+                          <p className="text-xs text-muted-foreground font-semibold">a₍{power}₎</p>
+                          <p className="font-mono text-xs font-bold break-all">
+                            {Math.abs(coeff) < 1e-10 ? '0' : coeff.toExponential(2)}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </CardContent>
               </Card>
             </div>
           </div>
+
+          {/* Full Width: Matrix Section */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Matriz de Lagrange L ({results.matrix_A.length}×{results.matrix_A[0]?.length})</CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">Matriz de coeficientes de los polinomios de Lagrange base Li(x)/denominador</p>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {/* Matriz L */}
+                <div className="border border-border rounded-lg p-4 overflow-x-auto">
+                  <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase">Matriz L</p>
+                  <div 
+                    className="grid gap-1" 
+                    style={{ 
+                      gridTemplateColumns: `repeat(${Math.min(results.matrix_A[0]?.length || 0, 10)}, minmax(80px, 1fr))`,
+                      minWidth: 'min-content'
+                    }}
+                  >
+                    {results.matrix_A.flat().map((val, idx) => (
+                      <div key={idx} className="bg-muted/50 p-2 rounded text-center">
+                        <p className="font-mono text-xs">{val.toFixed(4)}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Full Width: Vectors Section */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Vectores de Entrada</CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">Puntos de interpolación utilizados</p>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Vector x */}
+                <div className="border border-border rounded-lg p-4 overflow-x-auto">
+                  <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase">Vector x</p>
+                  <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${Math.min(results.vector_x.length, 10)}, minmax(60px, 1fr))`, minWidth: 'min-content' }}>
+                    {results.vector_x.map((val, i) => (
+                      <div key={i} className="bg-muted/50 p-1 rounded text-center">
+                        <p className="font-mono text-xs">{val.toFixed(4)}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Vector b */}
+                <div className="border border-border rounded-lg p-4 overflow-x-auto">
+                  <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase">Vector b (y)</p>
+                  <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${Math.min(results.vector_b.length, 10)}, minmax(60px, 1fr))`, minWidth: 'min-content' }}>
+                    {results.vector_b.map((val, i) => (
+                      <div key={i} className="bg-muted/50 p-1 rounded text-center">
+                        <p className="font-mono text-xs">{val.toFixed(4)}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>
