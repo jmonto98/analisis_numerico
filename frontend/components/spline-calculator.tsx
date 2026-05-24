@@ -377,17 +377,17 @@ export function SplineCalculator() {
                   <p className="text-xs text-muted-foreground mt-1">Expresión polinomial de cada intervalo</p>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    {results.coefficients_matrix.map((row, idx) => (
-                      <div key={idx} className="border border-border rounded-lg p-3 bg-muted/30">
-                        <p className="text-xs font-semibold text-muted-foreground mb-1">
-                          Intervalo [{results.vector_x[idx].toFixed(2)}, {results.vector_x[idx + 1]?.toFixed(2)}]
-                        </p>
-                        <p className="text-sm font-mono text-foreground">
-                          P{idx + 1}(x) = {formatPolynomial(row, results.spline_degree)}
-                        </p>
-                      </div>
-                    ))}
+                  <div className="border border-border rounded-lg p-4">
+                    <div className="space-y-0">
+                      <div className="border-b border-border py-2 px-2 min-h-[1.5rem]"></div>
+                      {results.coefficients_matrix.map((row, idx) => (
+                        <div key={idx} className="border-b border-border hover:bg-muted/50 py-2 px-2">
+                          <p className="text-xs font-mono text-foreground">
+                            P{idx + 1}(x) = {formatPolynomial(row, results.spline_degree)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
