@@ -40,6 +40,36 @@ const parseValue = (value: string): number => {
   return parseFloat(value);
 };
 
+const formatPolynomial = (coefficients: number[], degree: number): string => {
+  const terms: string[] = [];
+
+  for (let i = 0; i < coefficients.length; i++) {
+    const coeff = coefficients[i];
+    const power = degree - i;
+    const roundedCoeff = coeff.toFixed(5);
+    const sign = coeff >= 0 ? '+ ' : '− ';
+    const absCoeff = Math.abs(coeff).toFixed(5);
+
+    if (power === 0) {
+      terms.push(`${sign}${absCoeff}`);
+    } else if (power === 1) {
+      terms.push(`${sign}${absCoeff}x`);
+    } else {
+      terms.push(`${sign}${absCoeff}x${power}`);
+    }
+  }
+
+  // Remove leading + or −
+  let result = terms.join(' ').trim();
+  if (result.startsWith('+ ')) {
+    result = result.substring(2);
+  } else if (result.startsWith('− ')) {
+    result = '−' + result.substring(2);
+  }
+
+  return `(${result})`;
+};
+
 interface SplineResponse {
   spline_degree: number;
   num_intervals: number;
@@ -303,8 +333,8 @@ export function SplineCalculator() {
               </CardContent>
             </Card>
 
-            {/* Coefficients Matrix and Vectors */}
             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              {/* Coefficients Matrix */}
               <Card className="bg-primary/10 border border-primary/30">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base text-primary">Matriz de Coeficientes</CardTitle>
@@ -340,47 +370,70 @@ export function SplineCalculator() {
                 </CardContent>
               </Card>
 
+              {/* Polynomials by Interval */}
               <Card className="bg-primary/10 border border-primary/30">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base text-primary">Datos de Entrada</CardTitle>
+                  <CardTitle className="text-base text-primary">Polinomios por Tramos</CardTitle>
+                  <p className="text-xs text-muted-foreground mt-1">Expresión polinomial de cada intervalo</p>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="border border-border rounded-lg p-4">
-                    <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase">Vector x</p>
-                    <div
-                      className="grid gap-1"
-                      style={{
-                        gridTemplateColumns: `repeat(${Math.min(results.vector_x.length, 8)}, minmax(50px, 1fr))`,
-                        minWidth: 'min-content',
-                      }}
-                    >
-                      {results.vector_x.map((val, i) => (
-                        <div key={i} className="bg-muted/50 p-2 rounded text-center">
-                          <p className="font-mono text-xs">{val.toFixed(4)}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="border border-border rounded-lg p-4">
-                    <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase">Vector b</p>
-                    <div
-                      className="grid gap-1"
-                      style={{
-                        gridTemplateColumns: `repeat(${Math.min(results.vector_b.length, 8)}, minmax(50px, 1fr))`,
-                        minWidth: 'min-content',
-                      }}
-                    >
-                      {results.vector_b.map((val, i) => (
-                        <div key={i} className="bg-muted/50 p-2 rounded text-center">
-                          <p className="font-mono text-xs">{val.toFixed(4)}</p>
-                        </div>
-                      ))}
-                    </div>
+                <CardContent>
+                  <div className="space-y-3">
+                    {results.coefficients_matrix.map((row, idx) => (
+                      <div key={idx} className="border border-border rounded-lg p-3 bg-muted/30">
+                        <p className="text-xs font-semibold text-muted-foreground mb-1">
+                          Intervalo [{results.vector_x[idx].toFixed(2)}, {results.vector_x[idx + 1]?.toFixed(2)}]
+                        </p>
+                        <p className="text-sm font-mono text-foreground">
+                          P{idx + 1}(x) = {formatPolynomial(row, results.spline_degree)}
+                        </p>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
             </div>
+
+            {/* Input Data */}
+            <Card className="bg-primary/10 border border-primary/30">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base text-primary">Datos de Entrada</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="border border-border rounded-lg p-4">
+                  <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase">Vector x</p>
+                  <div
+                    className="grid gap-1"
+                    style={{
+                      gridTemplateColumns: `repeat(${Math.min(results.vector_x.length, 8)}, minmax(50px, 1fr))`,
+                      minWidth: 'min-content',
+                    }}
+                  >
+                    {results.vector_x.map((val, i) => (
+                      <div key={i} className="bg-muted/50 p-2 rounded text-center">
+                        <p className="font-mono text-xs">{val.toFixed(4)}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="border border-border rounded-lg p-4">
+                  <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase">Vector b</p>
+                  <div
+                    className="grid gap-1"
+                    style={{
+                      gridTemplateColumns: `repeat(${Math.min(results.vector_b.length, 8)}, minmax(50px, 1fr))`,
+                      minWidth: 'min-content',
+                    }}
+                  >
+                    {results.vector_b.map((val, i) => (
+                      <div key={i} className="bg-muted/50 p-2 rounded text-center">
+                        <p className="font-mono text-xs">{val.toFixed(4)}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       )}
