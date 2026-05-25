@@ -117,7 +117,8 @@ export function VandermondePointsInput({
             max="40"
             step="10"
             value={validationPercentage}
-            onChange={(e) => onValidationPercentageChange(Number(e.target.value))}
+            // onChange={(e) => onValidationPercentageChange(Number(e.target.value))}
+            onChange={(e) => onValidationPercentageChange(Math.max(0, Math.min(40, Number(e.target.value))))}
             placeholder="Ej: 30"
             className="w-32"
           />
