@@ -114,6 +114,32 @@ export function SplinePointsInput({
         {/* Spline Degree and Validation Percentage - Side by side */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
+            <Label htmlFor="validation-percent" className="text-sm font-semibold">
+              % de Validación
+            </Label>
+            <Input
+              id="validation-percent"
+              type="number"
+              min="0"
+              max="40"
+              step="10"
+              value={validationPercentage}
+              onChange={(e) => {
+                const newPercentage = Math.max(0, Math.min(40, Number(e.target.value)));
+                setValidationPercentage(newPercentage);
+                setSelectedValidationPoints(new Set());
+              }}
+              placeholder="Ej: 30"
+              className="w-32"
+            />
+            <p className="text-xs text-gray-500">
+              {validationPercentage > 0 
+                ? `Se reservarán ${maxValidationPoints} punto(s) para validación`
+                : 'Se usarán todos los puntos para interpolación'}
+            </p>
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="spline-degree" className="text-sm font-semibold">
               Grado del Spline
             </Label>
@@ -129,32 +155,6 @@ export function SplinePointsInput({
             </Select>
             <p className="text-xs text-gray-500">
               Se requieren al menos {splineDegree + 1} puntos
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="validation-percent" className="text-sm font-semibold">
-              % de Validación
-            </Label>
-            <Input
-              id="validation-percent"
-              type="number"
-              min="0"
-              max="100"
-              step="10"
-              value={validationPercentage}
-              onChange={(e) => {
-                const newPercentage = Math.max(0, Math.min(100, Number(e.target.value)));
-                setValidationPercentage(newPercentage);
-                setSelectedValidationPoints(new Set());
-              }}
-              placeholder="Ej: 30"
-              className="w-full"
-            />
-            <p className="text-xs text-gray-500">
-              {validationPercentage > 0 
-                ? `Se reservarán ${maxValidationPoints} punto(s) para validación`
-                : 'Se usarán todos los puntos para interpolación'}
             </p>
           </div>
         </div>
@@ -212,7 +212,7 @@ export function SplinePointsInput({
                         checked={selectedValidationPoints.has(index)}
                         onCheckedChange={(checked) => handleValidationCheckChange(index, checked as boolean)}
                         disabled={isDisabled}
-                        className="h-5 w-5"
+                        className="h-5 w-5 border-2 border-primary text-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                       />
                     </div>
                   );

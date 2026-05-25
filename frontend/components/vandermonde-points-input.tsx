@@ -114,7 +114,7 @@ export function VandermondePointsInput({
             id="validation-percent"
             type="number"
             min="0"
-            max="100"
+            max="40"
             step="10"
             value={validationPercentage}
             onChange={(e) => onValidationPercentageChange(Number(e.target.value))}
@@ -181,7 +181,7 @@ export function VandermondePointsInput({
                         checked={selectedValidationPoints.includes(index)}
                         onCheckedChange={() => handleValidationPointToggle(index)}
                         disabled={isDisabled}
-                        className="h-5 w-5"
+                        className="h-5 w-5 border-2 border-primary text-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                       />
                     </div>
                   );

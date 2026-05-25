@@ -26,14 +26,14 @@ export default function Home() {
 
         {/* Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
-          <Card className="border-2">
+          <Card className="border-2 h-full">
             <CardHeader>
               <CardTitle>Ecuaciones No Lineales</CardTitle>
               <CardDescription>
                 Métodos para encontrar raíces
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex flex-col justify-between h-full">
               <ul className="space-y-2 text-sm mb-4">
                 <li>✓ Bisección</li>
                 <li>✓ Newton</li>
@@ -50,14 +50,14 @@ export default function Home() {
             </CardContent>
           </Card>
 
-          <Card className="border-2">
+          <Card className="border-2 h-full">
             <CardHeader>
               <CardTitle>Sistemas de Ecuaciones</CardTitle>
               <CardDescription>
                 Resolución de sistemas lineales
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex flex-col justify-between h-full">
               <ul className="space-y-2 text-sm mb-4">              
                 <li>✓ Gauss-Seidel</li>
                 <li>✓ Jacobi</li>
@@ -71,14 +71,14 @@ export default function Home() {
             </CardContent>
           </Card>
 
-          <Card className="border-2">
+          <Card className="border-2 h-full">
             <CardHeader>
               <CardTitle>Interpolación</CardTitle>
               <CardDescription>
                 Ajuste polinomial
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex flex-col justify-between h-full">
               <ul className="space-y-2 text-sm mb-4">
                 <li>✓ Vandermonde</li>
                 <li>✓ Lagrange</li>
