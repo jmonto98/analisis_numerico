@@ -357,14 +357,7 @@ export function LagrangeCalculator() {
                 </div>
               </div>
             </CardContent>
-          </Card>
 
-          {/* Full Width: Vectors Section */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Vectores de Entrada</CardTitle>
-              <p className="text-xs text-muted-foreground mt-1">Puntos de interpolación utilizados</p>
-            </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Vector x */}

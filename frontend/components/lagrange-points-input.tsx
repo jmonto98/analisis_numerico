@@ -204,7 +204,7 @@ export function LagrangePointsInput({
                   size="sm"
                   onClick={() => handleRemovePoint(index)}
                   disabled={points.length <= 3}
-                  className="w-8 h-8 p-0"
+                  className="text-red-500 hover:text-red-700 h-9"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
