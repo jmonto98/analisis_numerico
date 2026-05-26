@@ -111,6 +111,13 @@ export function SplineCalculator() {
       setError(null);
       setIsLoading(true);
 
+      // Validate that if validation percentage is set, at least one point is selected
+      if (validationPercentage > 0 && selectedValidationPoints.size === 0) {
+        setError('Debes seleccionar al menos un punto para validación');
+        setIsLoading(false);
+        return;
+      }
+
       // Parse string values to numbers
       const x = points.map(p => parseValue(p.x));
       const y = points.map(p => parseValue(p.y));
@@ -190,7 +197,7 @@ export function SplineCalculator() {
         {/* Calculate Button */}
         <Button
           onClick={handleCalculate}
-          disabled={isLoading || points.length < splineDegree + 1}
+          disabled={isLoading || points.length < splineDegree + 1 || (validationPercentage > 0 && selectedValidationPoints.size === 0)}
           size="lg"
           className="w-full"
         >

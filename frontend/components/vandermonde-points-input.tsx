@@ -168,7 +168,7 @@ export function VandermondePointsInput({
           {/* Validation Checkboxes - Only show if validation_percentage > 0 */}
           {validationPercentage > 0 && (
             <div>
-              <Label className="text-xs text-gray-600 font-semibold mb-2 block">
+              <Label className="text-xs text-red-500 font-semibold mb-2 block">
                 Seleccionar para Validación (máx: {Math.max(1, Math.floor(points.length * validationPercentage / 100))})
               </Label>
               <div className="grid gap-2 items-center" style={{ gridTemplateColumns: `repeat(${points.length}, minmax(0, 1fr))` }}>

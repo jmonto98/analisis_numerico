@@ -84,6 +84,13 @@ export function LagrangeCalculator() {
         return;
       }
 
+      // Validate that if validation percentage is set, at least one point is selected
+      if (validationPercentage > 0 && selectedValidationPoints.length === 0) {
+        setError('Debes seleccionar al menos un punto para validación');
+        setIsLoading(false);
+        return;
+      }
+
       // Prepare payload - separate training and validation data
       const x = points.map((p) => parseValue(p.x));
       const y = points.map((p) => parseValue(p.y));
@@ -156,7 +163,7 @@ export function LagrangeCalculator() {
         />
 
         {/* Calculate Button */}
-        <Button onClick={handleCalculate} disabled={isLoading} size="lg" className="w-full">
+        <Button onClick={handleCalculate} disabled={isLoading || (validationPercentage > 0 && selectedValidationPoints.length === 0)} size="lg" className="w-full">
           {isLoading ? (
             <>
               <Spinner className="w-4 h-4 mr-2" />
