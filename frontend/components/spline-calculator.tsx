@@ -207,7 +207,7 @@ export function SplineCalculator() {
               Calculando...
             </>
           ) : (
-            'Calcular Spline'
+            'Interpolar'
           )}
         </Button>
 
