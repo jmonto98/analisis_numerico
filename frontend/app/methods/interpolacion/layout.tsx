@@ -4,11 +4,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
-const methods = [
-  { id: 'vandermonde', label: 'Vandermonde' },
+const methods = [  
   { id: 'lagrange', label: 'Lagrange' },
+  { id: 'newton', label: 'Newton Interpolante' },
   { id: 'spline', label: 'Spline' },
-  { id: 'newton', label: 'Newton' },
+  { id: 'vandermonde', label: 'Vandermonde' },
+ 
 ];
 
 export default function InterpolacionLayout({
