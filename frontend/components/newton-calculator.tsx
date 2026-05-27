@@ -402,7 +402,7 @@ export function NewtonCalculator() {
                         <tr key={idx} className="border-b border-border hover:bg-muted/50">
                           <td className="py-2 px-3 font-mono text-xs">{p.x.toFixed(6)}</td>
                           <td className="py-2 px-3 font-mono text-xs">{p.y.toFixed(6)}</td>
-                          <td className="py-2 px-3 text-blue-600 text-xs">Training</td>
+                          <td className="py-2 px-3 text-blue-600 text-xs">Entrenamiento</td>
                         </tr>
                       ))}
                       {results.validation_points.map((p, idx) => (

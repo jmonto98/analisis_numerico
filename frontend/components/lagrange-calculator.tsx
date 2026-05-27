@@ -384,6 +384,38 @@ export function LagrangeCalculator() {
                   </div>
                 </div>
               </div>
+
+              {/* Input Data */}
+              <div className="border border-border rounded-lg p-4">
+                <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase">Datos de Entrada</p>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-2 px-3">x</th>
+                        <th className="text-left py-2 px-3">y</th>
+                        <th className="text-left py-2 px-3">Tipo</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {results.training_points.map((p, idx) => (
+                        <tr key={idx} className="border-b border-border hover:bg-muted/50">
+                          <td className="py-2 px-3 font-mono text-xs">{p.x.toFixed(6)}</td>
+                          <td className="py-2 px-3 font-mono text-xs">{p.y.toFixed(6)}</td>
+                          <td className="py-2 px-3 text-blue-600 text-xs">Entrenamiento</td>
+                        </tr>
+                      ))}
+                      {results.validation_points.map((p, idx) => (
+                        <tr key={`val-${idx}`} className="border-b border-border hover:bg-muted/50">
+                          <td className="py-2 px-3 font-mono text-xs">{p.x.toFixed(6)}</td>
+                          <td className="py-2 px-3 font-mono text-xs">{p.y.toFixed(6)}</td>
+                          <td className="py-2 px-3 text-green-600 text-xs">Validación</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
