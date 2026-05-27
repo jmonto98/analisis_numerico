@@ -8,6 +8,7 @@ const methods = [
   { id: 'vandermonde', label: 'Vandermonde' },
   { id: 'lagrange', label: 'Lagrange' },
   { id: 'spline', label: 'Spline' },
+  { id: 'newton', label: 'Newton' },
 ];
 
 export default function InterpolacionLayout({
