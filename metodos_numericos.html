@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Métodos Numéricos — Guía de Estudio</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #f9f9f7; color: #1a1a18; padding: 1.5rem; max-width: 900px; margin: 0 auto; line-height: 1.6; }
+  :root {
+    --color-background-primary: #ffffff;
+    --color-background-secondary: #f1efe8;
+    --color-text-primary: #1a1a18;
+    --color-text-secondary: #5f5e5a;
+    --color-text-danger: #a32d2d;
+    --color-text-success: #0f6e56;
+    --color-border-tertiary: rgba(0,0,0,0.12);
+    --color-border-secondary: rgba(0,0,0,0.25);
+    --color-border-primary: rgba(0,0,0,0.35);
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+    --font-mono: ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    body { background: #1c1c1a; color: #e8e6de; }
+    :root {
+      --color-background-primary: #2a2a28;
+      --color-background-secondary: #232321;
+      --color-text-primary: #e8e6de;
+      --color-text-secondary: #a0a09a;
+      --color-text-danger: #f09595;
+      --color-text-success: #5dcaa5;
+      --color-border-tertiary: rgba(255,255,255,0.10);
+      --color-border-secondary: rgba(255,255,255,0.20);
+      --color-border-primary: rgba(255,255,255,0.30);
+    }
+    .badge-fast { background: #173404; color: #c0dd97; }
+    .badge-med  { background: #412402; color: #fac775; }
+    .badge-slow { background: #501313; color: #f09595; }
+    .badge-safe { background: #04342c; color: #9fe1cb; }
+    .stars { color: #fac775; }
+  }
+  h1 { font-size: 22px; font-weight: 500; margin-bottom: 0.25rem; }
+  .subtitle { font-size: 14px; color: var(--color-text-secondary); margin-bottom: 1.5rem; }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .tab-btn { padding: 6px 14px; border: 0.5px solid var(--color-border-secondary); border-radius: 20px; background: transparent; font-size: 13px; cursor: pointer; color: var(--color-text-secondary); transition: all 0.15s; }
+  .tab-btn.active { background: var(--color-background-secondary); color: var(--color-text-primary); border-color: var(--color-border-primary); font-weight: 500; }
+  .section { display: none; }
+  .section.active { display: block; }
+  .card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; }
+  .method-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+  .method-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; }
+  .method-title { font-size: 15px; font-weight: 500; margin: 0 0 4px; color: var(--color-text-primary); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+  .badge-fast { background: #EAF3DE; color: #3B6D11; }
+  .badge-med  { background: #FAEEDA; color: #854F0B; }
+  .badge-slow { background: #FCEBEB; color: #A32D2D; }
+  .badge-safe { background: #E1F5EE; color: #0F6E56; }
+  .formula { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 8px 12px; font-family: var(--font-mono); font-size: 13px; color: var(--color-text-primary); margin: 8px 0; overflow-x: auto; white-space: nowrap; }
+  .pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  .pro-item, .con-item { font-size: 12px; display: flex; gap: 5px; align-items: flex-start; color: var(--color-text-secondary); }
+  .pro-item i { color: #1D9E75; flex-shrink: 0; }
+  .con-item i { color: #D85A30; flex-shrink: 0; }
+  .row-label { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); margin: 1rem 0 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .stars { color: #EF9F27; font-size: 12px; }
+  table.comp { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.comp th { text-align: left; padding: 8px 10px; font-weight: 500; font-size: 12px; color: var(--color-text-secondary); border-bottom: 0.5px solid var(--color-border-tertiary); }
+  table.comp td { padding: 8px 10px; border-bottom: 0.5px solid var(--color-border-tertiary); color: var(--color-text-primary); vertical-align: middle; }
+  table.comp tr:last-child td { border-bottom: none; }
+  .tip { border-left: 2px solid #5DCAA5; padding: 8px 12px; background: var(--color-background-secondary); border-radius: 0 var(--border-radius-md) var(--border-radius-md) 0; margin: 8px 0; font-size: 13px; color: var(--color-text-secondary); }
+  .err-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: flex-start; font-size: 13px; }
+  .err-icon { flex-shrink: 0; margin-top: 1px; }
+  .err-bad  { color: var(--color-text-danger); }
+  .err-good { color: var(--color-text-success); }
+  .formula-box { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px 14px; margin-bottom: 10px; }
+  .formula-box .fname { font-size: 12px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 4px; }
+  .formula-box .fval { font-family: var(--font-mono); font-size: 13px; color: var(--color-text-primary); overflow-x: auto; white-space: nowrap; }
+  .opt-btn { padding: 6px 12px; border: 0.5px solid var(--color-border-secondary); border-radius: 6px; font-size: 13px; cursor: pointer; background: transparent; color: var(--color-text-primary); margin: 4px; }
+  .opt-btn:hover { background: var(--color-background-secondary); }
+  .result-box { background: var(--color-background-secondary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; font-size: 14px; color: var(--color-text-primary); min-height: 60px; margin-top: 12px; }
+  .result-box .rec { font-size: 18px; font-weight: 500; margin-bottom: 4px; }
+  .result-box .why { font-size: 13px; color: var(--color-text-secondary); }
+  hr.divider { border: none; border-top: 0.5px solid var(--color-border-tertiary); margin: 8px 0; }
+</style>
+</head>
+<body>
+
+<h1>Métodos Numéricos</h1>
+<p class="subtitle">Guía de estudio condensada — Análisis Numérico EAFIT</p>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="show('nonlinear',this)"><i class="ti ti-function"></i> Ec. No Lineales</button>
+  <button class="tab-btn" onclick="show('linear',this)"><i class="ti ti-math-symbols"></i> Sist. Lineales</button>
+  <button class="tab-btn" onclick="show('interp',this)"><i class="ti ti-chart-dots"></i> Interpolación</button>
+  <button class="tab-btn" onclick="show('formulas',this)"><i class="ti ti-sum"></i> Fórmulas</button>
+  <button class="tab-btn" onclick="show('selector',this)"><i class="ti ti-compass"></i> ¿Cuál usar?</button>
+  <button class="tab-btn" onclick="show('errors',this)"><i class="ti ti-alert-triangle"></i> Errores comunes</button>
+</div>
+
+<!-- ECUACIONES NO LINEALES -->
+<div id="nonlinear" class="section active">
+  <div class="card" style="margin-bottom:1.25rem;border-left:3px solid #5DCAA5;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <i class="ti ti-function" style="color:#5DCAA5;font-size:18px;"></i>
+      <span style="font-size:15px;font-weight:500;">¿Para qué sirven las ecuaciones no lineales?</span>
+    </div>
+    <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:8px;">
+      Se usan cuando se quiere encontrar el valor de <strong style="color:var(--color-text-primary);">x</strong> tal que <strong style="color:var(--color-text-primary);">f(x) = 0</strong>, y la función no es una línea recta. En la práctica, aparecen cuando el modelo matemático es complejo: ecuaciones trigonométricas, exponenciales, o combinaciones de ambas.
+    </p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;">
+      <div style="background:var(--color-background-secondary);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--color-text-secondary);">
+        <strong style="color:var(--color-text-primary);display:block;margin-bottom:2px;">⚙️ Ingeniería</strong>
+        Encontrar la carga que lleva una viga a su límite elástico, o la temperatura en la que un material cambia de fase.
+      </div>
+      <div style="background:var(--color-background-secondary);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--color-text-secondary);">
+        <strong style="color:var(--color-text-primary);display:block;margin-bottom:2px;">💰 Finanzas</strong>
+        Calcular la tasa de interés interna (TIR) de una inversión, que no tiene fórmula cerrada.
+      </div>
+      <div style="background:var(--color-background-secondary);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--color-text-secondary);">
+        <strong style="color:var(--color-text-primary);display:block;margin-bottom:2px;">🧪 Física/Química</strong>
+        Hallar el equilibrio de una reacción química o el punto de operación de un circuito no lineal.
+      </div>
+    </div>
+    <div style="margin-top:10px;font-size:12px;color:var(--color-text-secondary);background:var(--color-background-secondary);border-radius:8px;padding:8px 10px;">
+      <strong style="color:var(--color-text-primary);">Pregunta clave:</strong> ¿Tienes un intervalo [a,b] con cambio de signo? → método cerrado (Bisección, Regla Falsa). ¿Solo un punto inicial? → método abierto (Newton, Secante).
+    </div>
+  </div>
+  <div class="method-grid">
+    <div class="method-card">
+      <div class="method-title"><i class="ti ti-arrows-split-2"></i> Bisección <span class="badge badge-slow">lento</span><span class="badge badge-safe">seguro</span></div>
+      <div class="formula">xₘ = (a + b) / 2</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">Requiere: f(a)·f(b) &lt; 0 · Orden: 1</div>
+      <div class="pros-cons">
+        <div><div class="pro-item"><i class="ti ti-circle-check"></i>Siempre converge</div><div class="pro-item"><i class="ti ti-circle-check"></i>Sin derivadas</div><div class="pro-item"><i class="ti ti-circle-check"></i>Predecible</div></div>
+        <div><div class="con-item"><i class="ti ti-circle-x"></i>Convergencia lineal</div><div class="con-item"><i class="ti ti-circle-x"></i>Necesita intervalo</div><div class="con-item"><i class="ti ti-circle-x"></i>Una raíz a la vez</div></div>
+      </div>
+    </div>
+    <div class="method-card">
+      <div class="method-title"><i class="ti ti-trending-up"></i> Newton-Raphson <span class="badge badge-fast">rápido</span></div>
+      <div class="formula">xₙ₊₁ = xₙ − f(xₙ)/f'(xₙ)</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">Requiere: f'(x) ≠ 0 · Orden: 2 (cuadrático)</div>
+      <div class="pros-cons">
+        <div><div class="pro-item"><i class="ti ti-circle-check"></i>Convergencia cuadrática</div><div class="pro-item"><i class="ti ti-circle-check"></i>Sin intervalo</div><div class="pro-item"><i class="ti ti-circle-check"></i>Alta precisión</div></div>
+        <div><div class="con-item"><i class="ti ti-circle-x"></i>Necesita f'(x)</div><div class="con-item"><i class="ti ti-circle-x"></i>Puede divergir</div><div class="con-item"><i class="ti ti-circle-x"></i>Falla si f'=0</div></div>
+      </div>
+    </div>
+    <div class="method-card">
+      <div class="method-title"><i class="ti ti-refresh"></i> Punto Fijo <span class="badge badge-slow">lento</span></div>
+      <div class="formula">xₙ₊₁ = g(xₙ)</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">Requiere: |g'(x)| &lt; 1 · Orden: 1</div>
+      <div class="pros-cons">
+        <div><div class="pro-item"><i class="ti ti-circle-check"></i>Sin derivadas</div><div class="pro-item"><i class="ti ti-circle-check"></i>Código simple</div></div>
+        <div><div class="con-item"><i class="ti ti-circle-x"></i>Elección de g crítica</div><div class="con-item"><i class="ti ti-circle-x"></i>Solo 60% éxito</div></div>
+      </div>
+    </div>
+    <div class="method-card">
+      <div class="method-title"><i class="ti ti-diagonal"></i> Secante <span class="badge badge-fast">rápido</span></div>
+      <div class="formula">xₙ₊₁ = xₙ − f(xₙ)·(xₙ−xₙ₋₁)/(f(xₙ)−f(xₙ₋₁))</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">Requiere: x₀, x₁ · Orden: φ ≈ 1.618</div>
+      <div class="pros-cons">
+        <div><div class="pro-item"><i class="ti ti-circle-check"></i>Sin derivadas</div><div class="pro-item"><i class="ti ti-circle-check"></i>Superlineal</div></div>
+        <div><div class="con-item"><i class="ti ti-circle-x"></i>Dos puntos iniciales</div><div class="con-item"><i class="ti ti-circle-x"></i>Puede divergir</div></div>
+      </div>
+    </div>
+    <div class="method-card">
+      <div class="method-title"><i class="ti ti-arrow-merge"></i> Regla Falsa <span class="badge badge-med">medio</span><span class="badge badge-safe">seguro</span></div>
+      <div class="formula">xₘ = (a·f(b) − b·f(a)) / (f(b)−f(a))</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">Requiere: cambio de signo · Orden: 1–2</div>
+      <div class="pros-cons">
+        <div><div class="pro-item"><i class="ti ti-circle-check"></i>Usa magnitud de f</div><div class="pro-item"><i class="ti ti-circle-check"></i>Siempre converge</div></div>
+        <div><div class="con-item"><i class="ti ti-circle-x"></i>Un extremo fijo</div><div class="con-item"><i class="ti ti-circle-x"></i>Necesita intervalo</div></div>
+      </div>
+    </div>
+    <div class="method-card">
+      <div class="method-title"><i class="ti ti-stack-2"></i> Raíces Múltiples (Deflación)</div>
+      <div class="formula">f₁(x) = f(x)/(x − α₁)</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">Usa método base (Newton) · Divide por raíces encontradas</div>
+      <div class="pros-cons">
+        <div><div class="pro-item"><i class="ti ti-circle-check"></i>Todas las raíces</div><div class="pro-item"><i class="ti ti-circle-check"></i>Sistemático</div></div>
+        <div><div class="con-item"><i class="ti ti-circle-x"></i>Acumula errores</div><div class="con-item"><i class="ti ti-circle-x"></i>Inestabilidad</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:1.5rem;">
+    <div class="row-label">Comparativa rápida</div>
+    <table class="comp">
+      <thead><tr><th>Método</th><th>Convergencia</th><th>Velocidad</th><th>Robustez</th><th>Éxito</th></tr></thead>
+      <tbody>
+        <tr><td>Bisección</td><td>Lineal</td><td><span class="stars">★</span></td><td><span class="stars">★★★★★</span></td><td>100%</td></tr>
+        <tr><td>Newton</td><td>Cuadrática</td><td><span class="stars">★★★★★</span></td><td><span class="stars">★★★</span></td><td>80%</td></tr>
+        <tr><td>Secante</td><td>Superlineal φ</td><td><span class="stars">★★★★</span></td><td><span class="stars">★★★</span></td><td>85%</td></tr>
+        <tr><td>Punto Fijo</td><td>Lineal</td><td><span class="stars">★★</span></td><td><span class="stars">★★</span></td><td>60%</td></tr>
+        <tr><td>Regla Falsa</td><td>Superlineal</td><td><span class="stars">★★★</span></td><td><span class="stars">★★★★</span></td><td>95%</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SISTEMAS LINEALES -->
+<div id="linear" class="section">
+  <div class="card" style="margin-bottom:1.25rem;border-left:3px solid #7B8FD4;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <i class="ti ti-math-symbols" style="color:#7B8FD4;font-size:18px;"></i>
+      <span style="font-size:15px;font-weight:500;">¿Para qué sirven los sistemas lineales?</span>
+    </div>
+    <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:8px;">
+      Se usan cuando se tienen <strong style="color:var(--color-text-primary);">n incógnitas y n ecuaciones lineales</strong> (es decir, del tipo Ax = b). La pregunta es: ¿cuál es la combinación de valores que satisface todas las ecuaciones a la vez? Los métodos iterativos son especialmente útiles cuando la matriz es muy grande y dispersa (muchos ceros).
+    </p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;">
+      <div style="background:var(--color-background-secondary);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--color-text-secondary);">
+        <strong style="color:var(--color-text-primary);display:block;margin-bottom:2px;">🏗️ Estructuras</strong>
+        Calcular las fuerzas en cada barra de una armadura o los desplazamientos en un modelo de elementos finitos.
+      </div>
+      <div style="background:var(--color-background-secondary);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--color-text-secondary);">
+        <strong style="color:var(--color-text-primary);display:block;margin-bottom:2px;">🌡️ Transferencia de calor</strong>
+        Encontrar la temperatura en cada nodo de una malla cuando se discretiza la ecuación de Laplace.
+      </div>
+      <div style="background:var(--color-background-secondary);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--color-text-secondary);">
+        <strong style="color:var(--color-text-primary);display:block;margin-bottom:2px;">🔌 Circuitos</strong>
+        Resolver las corrientes en una red eléctrica compleja aplicando las leyes de Kirchhoff.
+      </div>
+    </div>
+    <div style="margin-top:10px;font-size:12px;color:var(--color-text-secondary);background:var(--color-background-secondary);border-radius:8px;padding:8px 10px;">
+      <strong style="color:var(--color-text-primary);">Pregunta clave:</strong> ¿La matriz es diagonal dominante? → convergen Jacobi y Gauss-Seidel. ¿Quieres la solución exacta en un paso? → Eliminación Gaussiana (método directo, no cubierto aquí pero siempre disponible).
+    </div>
+  </div>
+  <div class="method-grid">
+    <div class="method-card">
+      <div class="method-title"><i class="ti ti-grid-dots"></i> Jacobi <span class="badge badge-slow">lento</span></div>
+      <div class="formula">xᵢ⁽ᵏ⁺¹⁾ = (bᵢ - Σⱼ≠ᵢ aᵢⱼxⱼ⁽ᵏ⁾) / aᵢᵢ</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">Condición: |aᵢᵢ| &gt; Σ|aᵢⱼ| (diagonal dominante)</div>
+      <div class="pros-cons">
+        <div><div class="pro-item"><i class="ti ti-circle-check"></i>Paralelizable</div><div class="pro-item"><i class="ti ti-circle-check"></i>Fácil de programar</div></div>
+        <div><div class="con-item"><i class="ti ti-circle-x"></i>Convergencia lenta</div><div class="con-item"><i class="ti ti-circle-x"></i>Muchas iteraciones</div></div>
+      </div>
+    </div>
+    <div class="method-card">
+      <div class="method-title"><i class="ti ti-arrows-right"></i> Gauss-Seidel <span class="badge badge-med">medio</span></div>
+      <div class="formula">xᵢ⁽ᵏ⁺¹⁾ usa valores ya actualizados</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">~2× más rápido que Jacobi · Misma condición</div>
+      <div class="pros-cons">
+        <div><div class="pro-item"><i class="ti ti-circle-check"></i>Más rápido que Jacobi</div><div class="pro-item"><i class="ti ti-circle-check"></i>Sin costo extra</div></div>
+        <div><div class="con-item"><i class="ti ti-circle-x"></i>No paralelizable</div><div class="con-item"><i class="ti ti-circle-x"></i>Orden secuencial</div></div>
+      </div>
+    </div>
+    <div class="method-card">
+      <div class="method-title"><i class="ti ti-rocket"></i> SOR <span class="badge badge-fast">rápido</span></div>
+      <div class="formula">xᵢ⁽ᵏ⁺¹⁾ = (1−ω)xᵢ⁽ᵏ⁾ + ω·GS</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">ω ∈ (0,2) · ω=1 → Gauss-Seidel</div>
+      <div class="pros-cons">
+        <div><div class="pro-item"><i class="ti ti-circle-check"></i>2–10× más rápido</div><div class="pro-item"><i class="ti ti-circle-check"></i>Generaliza GS y Jacobi</div></div>
+        <div><div class="con-item"><i class="ti ti-circle-x"></i>Hallar ω óptimo difícil</div><div class="con-item"><i class="ti ti-circle-x"></i>Sensible a ω</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="tip">ω óptimo: ωₒₚₜ = 2 / (1 + √(1 − ρ²)) donde ρ = radio espectral de Jacobi</div>
+  <div class="card" style="margin-top:1rem;">
+    <div class="row-label">Comparativa</div>
+    <table class="comp">
+      <thead><tr><th>Método</th><th>Velocidad</th><th>Complejidad/iter</th><th>Paralelizable</th><th>Facilidad</th></tr></thead>
+      <tbody>
+        <tr><td>Jacobi</td><td><span class="stars">★</span></td><td>O(n²)</td><td>✅</td><td><span class="stars">★★★★★</span></td></tr>
+        <tr><td>Gauss-Seidel</td><td><span class="stars">★★★</span></td><td>O(n²)</td><td>❌</td><td><span class="stars">★★★★</span></td></tr>
+        <tr><td>SOR</td><td><span class="stars">★★★★★</span></td><td>O(n²)</td><td>❌</td><td><span class="stars">★★</span></td></tr>
+      </tbody>
+    </table>
+    <div class="tip" style="margin-top:10px;">Usa SOR si es posible calcular ωₒₚₜ · Si no, Gauss-Seidel · Jacobi solo si se requiere paralelización</div>
+  </div>
+</div>
+
+<!-- INTERPOLACIÓN -->
+<div id="interp" class="section">
+  <div class="card" style="margin-bottom:1.25rem;border-left:3px solid #E8924A;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <i class="ti ti-chart-dots" style="color:#E8924A;font-size:18px;"></i>
+      <span style="font-size:15px;font-weight:500;">¿Para qué sirve la interpolación?</span>
+    </div>
+    <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:8px;">
+      Se usa cuando se tiene un <strong style="color:var(--color-text-primary);">conjunto de puntos conocidos</strong> (mediciones, datos experimentales) y se necesita <strong style="color:var(--color-text-primary);">estimar valores intermedios</strong> que no mediste. La idea es construir una función matemática que pase exactamente por todos los puntos dados y pueda evaluarse en cualquier otro lugar.
+    </p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;">
+      <div style="background:var(--color-background-secondary);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--color-text-secondary);">
+        <strong style="color:var(--color-text-primary);display:block;margin-bottom:2px;">📊 Datos experimentales</strong>
+        Tienes mediciones de temperatura cada hora y quieres saber la temperatura a los 23 minutos del día.
+      </div>
+      <div style="background:var(--color-background-secondary);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--color-text-secondary);">
+        <strong style="color:var(--color-text-primary);display:block;margin-bottom:2px;">🖥️ Computación gráfica</strong>
+        Suavizar trayectorias de animación o superficies 3D a partir de puntos de control (splines en acción).
+      </div>
+      <div style="background:var(--color-background-secondary);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--color-text-secondary);">
+        <strong style="color:var(--color-text-primary);display:block;margin-bottom:2px;">🗺️ Ingeniería / GIS</strong>
+        Construir un mapa de elevación continuo a partir de puntos GPS dispersos medidos en campo.
+      </div>
+    </div>
+    <div style="margin-top:10px;font-size:12px;color:var(--color-text-secondary);background:var(--color-background-secondary);border-radius:8px;padding:8px 10px;">
+      <strong style="color:var(--color-text-primary);">⚠️ Interpolación ≠ Regresión:</strong> La interpolación pasa <em>exactamente</em> por todos los puntos. La regresión busca la curva que mejor se <em>aproxima</em> a ellos (puede no pasar por ninguno). Si se tienen datos con ruido, usar regresión; si son exactos, interpolar.
+    </div>
+  </div>
+  <div class="method-grid">
+    <div class="method-card">
+      <div class="method-title"><i class="ti ti-table"></i> Vandermonde</div>
+      <div class="formula">V·c = y → P(x) = c₀+c₁x+...+cₙxⁿ</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">O(n³) construcción · Evitar para n &gt; 10</div>
+      <div class="pros-cons">
+        <div><div class="pro-item"><i class="ti ti-circle-check"></i>Coeficientes explícitos</div><div class="pro-item"><i class="ti ti-circle-check"></i>Simple conceptualmente</div></div>
+        <div><div class="con-item"><i class="ti ti-circle-x"></i>Mal condicionado</div><div class="con-item"><i class="ti ti-circle-x"></i>Fenómeno de Runge</div></div>
+      </div>
+    </div>
+    <div class="method-card">
+      <div class="method-title"><i class="ti ti-sum"></i> Lagrange</div>
+      <div class="formula">P(x) = Σ yᵢ·Lᵢ(x), Lᵢ = Π(x−xⱼ)/(xᵢ−xⱼ)</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">O(n²) evaluación · Más estable que Vandermonde</div>
+      <div class="pros-cons">
+        <div><div class="pro-item"><i class="ti ti-circle-check"></i>Sin sistema lineal</div><div class="pro-item"><i class="ti ti-circle-check"></i>Interpretación clara</div></div>
+        <div><div class="con-item"><i class="ti ti-circle-x"></i>Runge en extremos</div><div class="con-item"><i class="ti ti-circle-x"></i>Recalcular si nuevo punto</div></div>
+      </div>
+    </div>
+    <div class="method-card">
+      <div class="method-title"><i class="ti ti-math-function"></i> Newton (Dif. Divididas)</div>
+      <div class="formula">P(x) = f[x₀] + f[x₀,x₁](x−x₀) + ...</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">O(n²) construcción · O(n) evaluación (Horner)</div>
+      <div class="pros-cons">
+        <div><div class="pro-item"><i class="ti ti-circle-check"></i>Incremental</div><div class="pro-item"><i class="ti ti-circle-check"></i>Evaluación O(n)</div></div>
+        <div><div class="con-item"><i class="ti ti-circle-x"></i>O(n²) memoria tabla</div><div class="con-item"><i class="ti ti-circle-x"></i>Menos intuitivo</div></div>
+      </div>
+    </div>
+    <div class="method-card">
+      <div class="method-title"><i class="ti ti-wave-sine"></i> Spline Cúbico <span class="badge badge-fast">recomendado</span></div>
+      <div class="formula">S(x) = Sᵢ(x) cúbico en [xᵢ, xᵢ₊₁], C²</div>
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-bottom:4px;">O(n) construcción · O(1) evaluación</div>
+      <div class="pros-cons">
+        <div><div class="pro-item"><i class="ti ti-circle-check"></i>Sin oscilaciones</div><div class="pro-item"><i class="ti ti-circle-check"></i>Muy eficiente</div><div class="pro-item"><i class="ti ti-circle-check"></i>C² continuo</div></div>
+        <div><div class="con-item"><i class="ti ti-circle-x"></i>Sistema tridiagonal</div><div class="con-item"><i class="ti ti-circle-x"></i>Condiciones de borde</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:1.5rem;">
+    <div class="row-label">Comparativa</div>
+    <table class="comp">
+      <thead><tr><th>Método</th><th>Construcción</th><th>Evaluación</th><th>Estabilidad</th><th>Escalable</th></tr></thead>
+      <tbody>
+        <tr><td>Vandermonde</td><td>O(n³)</td><td>O(n)</td><td><span class="stars">★</span></td><td>❌ n&lt;10</td></tr>
+        <tr><td>Lagrange</td><td>O(n²)</td><td>O(n²)</td><td><span class="stars">★★</span></td><td>❌ n&lt;20</td></tr>
+        <tr><td>Newton Interp.</td><td>O(n²)</td><td>O(n)</td><td><span class="stars">★★★</span></td><td>✅</td></tr>
+        <tr><td>Spline</td><td>O(n)</td><td>O(1)</td><td><span class="stars">★★★★★</span></td><td>✅</td></tr>
+      </tbody>
+    </table>
+    <div class="tip" style="margin-top:10px;">Spline como primera opción · Newton si se añaden puntos dinámicamente · Lagrange para n&lt;20 · Evitar Vandermonde para n&gt;10</div>
+  </div>
+</div>
+
+<!-- FÓRMULAS -->
+<div id="formulas" class="section">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;">
+    <div class="card">
+      <div class="row-label">Ecuaciones No Lineales</div>
+      <div class="formula-box"><div class="fname">Newton</div><div class="fval">x_(n+1) = xn - f(xn)/f'(xn)</div></div>
+      <div class="formula-box"><div class="fname">Secante</div><div class="fval">x_(n+1) = xn - f(xn)·(xn-xn₋₁)/(f(xn)-f(xn₋₁))</div></div>
+      <div class="formula-box"><div class="fname">Regla Falsa</div><div class="fval">x = a - f(a)·(b-a)/(f(b)-f(a))</div></div>
+      <div class="formula-box"><div class="fname">Bisección</div><div class="fval">xm = (a + b) / 2</div></div>
+    </div>
+    <div class="card">
+      <div class="row-label">Sistemas Lineales</div>
+      <div class="formula-box"><div class="fname">Jacobi</div><div class="fval">xᵢ⁽ᵏ⁺¹⁾ = (bᵢ - Σⱼ≠ᵢ aᵢⱼxⱼ⁽ᵏ⁾) / aᵢᵢ</div></div>
+      <div class="formula-box"><div class="fname">Gauss-Seidel</div><div class="fval">= Jacobi pero usando xⱼ⁽ᵏ⁺¹⁾ si ya disponible</div></div>
+      <div class="formula-box"><div class="fname">SOR</div><div class="fval">xᵢ⁽ᵏ⁺¹⁾ = (1-ω)xᵢ⁽ᵏ⁾ + ω·GS</div></div>
+      <div class="formula-box"><div class="fname">ω óptimo</div><div class="fval">ωopt = 2 / (1 + √(1 - ρ²))</div></div>
+    </div>
+    <div class="card">
+      <div class="row-label">Interpolación</div>
+      <div class="formula-box"><div class="fname">Lagrange</div><div class="fval">P(x) = Σ yᵢ · Π(x-xⱼ)/(xᵢ-xⱼ)</div></div>
+      <div class="formula-box"><div class="fname">Newton (Dif. Divididas)</div><div class="fval">P = f[x₀] + f[x₀,x₁](x-x₀) + ...</div></div>
+      <div class="formula-box"><div class="fname">Dif. Dividida</div><div class="fval">f[xᵢ..xᵢ₊ₖ] = (f[xᵢ₊₁..]-f[xᵢ..]) / (xᵢ₊ₖ-xᵢ)</div></div>
+      <div class="formula-box"><div class="fname">Spline</div><div class="fval">S(x) = Sᵢ(x) cúbico ∀ x ∈ [xᵢ,xᵢ₊₁], C²</div></div>
+    </div>
+    <div class="card">
+      <div class="row-label">Criterios de convergencia</div>
+      <table class="comp">
+        <thead><tr><th>Método</th><th>Criterio</th></tr></thead>
+        <tbody>
+          <tr><td>Bisección</td><td>f(a)·f(b) &lt; 0</td></tr>
+          <tr><td>Newton</td><td>x₀ cerca de raíz, f'≠0</td></tr>
+          <tr><td>Punto Fijo</td><td>|g'(x)| &lt; 1</td></tr>
+          <tr><td>Jacobi/GS</td><td>diagonal dominante</td></tr>
+          <tr><td>SOR</td><td>0 &lt; ω &lt; 2</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- SELECTOR -->
+<div id="selector" class="section">
+  <div class="card">
+    <div style="font-size:15px;font-weight:500;margin-bottom:1rem;">¿Qué problema tienes?</div>
+    <div style="font-size:14px;color:var(--color-text-secondary);margin-bottom:10px;">Seleccioná tu caso:</div>
+    <div>      
+      <button class="opt-btn" onclick="recommend('raiz-intervalo')">Raíz con intervalo [a,b]</button>
+      <button class="opt-btn" onclick="recommend('raiz-sin-intervalo')">Raíz sin intervalo</button>
+      <button class="opt-btn" onclick="recommend('raiz-sin-derivada')">Raíz sin derivada</button>
+      <button class="opt-btn" onclick="recommend('raiz-segura')">Raíz garantizada</button>
+      <button class="opt-btn" onclick="recommend('sistema-pequeno')">Ax=b pequeño (&lt;1000)</button>
+      <button class="opt-btn" onclick="recommend('sistema-grande')">Ax=b disperso grande</button>
+      <button class="opt-btn" onclick="recommend('interp-pocos')">Interpolación pocos puntos</button>
+      <button class="opt-btn" onclick="recommend('interp-muchos')">Interpolación muchos puntos</button>
+      <button class="opt-btn" onclick="recommend('interp-dinamico')">Añadir puntos dinámico</button>
+    </div>
+    <div class="result-box" id="rec-box"><span style="color:var(--color-text-secondary);font-size:13px;">Seleccioná un caso para ver la recomendación.</span></div>
+  </div>
+</div>
+
+<!-- ERRORES COMUNES -->
+<div id="errors" class="section">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;">
+    <div class="card">
+      <div class="row-label">Ecuaciones No Lineales</div>
+      <div class="err-row"><i class="ti ti-x err-icon err-bad"></i><div>Newton sin verificar f'(x) ≠ 0 → división por cero</div></div>
+      <div class="err-row"><i class="ti ti-check err-icon err-good"></i><div>Comprobar f'(xₙ) antes de dividir</div></div>
+      <hr class="divider">
+      <div class="err-row"><i class="ti ti-x err-icon err-bad"></i><div>Elegir mal x₀ en Newton → divergencia</div></div>
+      <div class="err-row"><i class="ti ti-check err-icon err-good"></i><div>Usar Bisección primero como aproximación gruesa</div></div>
+      <hr class="divider">
+      <div class="err-row"><i class="ti ti-x err-icon err-bad"></i><div>Punto Fijo sin verificar |g'(x)| &lt; 1</div></div>
+      <div class="err-row"><i class="ti ti-check err-icon err-good"></i><div>Graficar g'(x) o analizar teóricamente antes</div></div>
+    </div>
+    <div class="card">
+      <div class="row-label">Sistemas Lineales</div>
+      <div class="err-row"><i class="ti ti-x err-icon err-bad"></i><div>Jacobi sin diagonal dominante → no converge</div></div>
+      <div class="err-row"><i class="ti ti-check err-icon err-good"></i><div>Verificar |aᵢᵢ| &gt; Σⱼ≠ᵢ|aᵢⱼ| antes de aplicar</div></div>
+      <hr class="divider">
+      <div class="err-row"><i class="ti ti-x err-icon err-bad"></i><div>Elegir ω al azar en SOR → puede divergir</div></div>
+      <div class="err-row"><i class="ti ti-check err-icon err-good"></i><div>Calcular ωₒₚₜ = 2/(1+√(1−ρ²))</div></div>
+    </div>
+    <div class="card">
+      <div class="row-label">Interpolación</div>
+      <div class="err-row"><i class="ti ti-x err-icon err-bad"></i><div>Polinomio de grado alto con puntos equiespaciados → Runge</div></div>
+      <div class="err-row"><i class="ti ti-check err-icon err-good"></i><div>Usar Spline o puntos de Chebyshev</div></div>
+      <hr class="divider">
+      <div class="err-row"><i class="ti ti-x err-icon err-bad"></i><div>Confundir Newton interpolante con Newton raíces</div></div>
+      <div class="err-row"><i class="ti ti-check err-icon err-good"></i><div>"Newton interpolante" = para interpolar · "Newton" = para raíces</div></div>
+      <hr class="divider">
+      <div class="err-row"><i class="ti ti-x err-icon err-bad"></i><div>Vandermonde para n &gt; 15</div></div>
+      <div class="err-row"><i class="ti ti-check err-icon err-good"></i><div>Cambiar a Spline o Newton interpolante</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+const recs = {
+  'raiz-intervalo':      { rec: '→ Regla Falsa', why: 'Tienes intervalo con cambio de signo: es más rápido que Bisección e igual de seguro. Si se precisa máxima velocidad y la derivada es fácil de calcular, es preferible usar Newton.' },
+  'raiz-sin-intervalo':  { rec: '→ Newton-Raphson', why: 'Sin intervalo y con derivada disponible, Newton es la mejor opción por su convergencia cuadrática. Elige bien x₀.' },
+  'raiz-sin-derivada':   { rec: '→ Secante', why: 'Si no se puede calcular f\'(x) pero se tienen dos estimados iniciales, Secante da convergencia superlineal (φ ≈ 1.618) sin derivadas.' },
+  'raiz-segura':         { rec: '→ Bisección', why: 'Garantía del 100% si hay cambio de signo. Lenta pero jamás falla. Ideal como primera etapa o cuando no se puede analizar convergencia.' },
+  'sistema-pequeno':     { rec: '→ Eliminación Gaussiana', why: 'Para matrices pequeñas sin estructura especial, un método directo (O(n³)) es más simple y preciso que los iterativos.' },
+  'sistema-grande':      { rec: '→ Gauss-Seidel o SOR', why: 'Para matrices dispersas grandes, los métodos iterativos son eficientes. SOR si se puede calcular ωₒₚₜ; Gauss-Seidel si no.' },
+  'interp-pocos':        { rec: '→ Lagrange o Newton interpolante', why: 'Para n < 10–20 puntos, ambos funcionan bien. Newton es mejor si es necesario añadir puntos después.' },
+  'interp-muchos':       { rec: '→ Spline Cúbico', why: 'Para n > 20, Spline es la única opción práctica. Evita el fenómeno de Runge, es C², O(n) en construcción y O(1) en evaluación.' },
+  'interp-dinamico':     { rec: '→ Newton (Diferencias Divididas)', why: 'Newton interpolante es incremental: puedes añadir un nuevo punto sin recalcular toda la tabla.' }
+};
+
+function recommend(key) {
+  const r = recs[key];
+  document.getElementById('rec-box').innerHTML = '<div class="rec">' + r.rec + '</div><div class="why">' + r.why + '</div>';
+}
+</script>
+</body>
+</html>
